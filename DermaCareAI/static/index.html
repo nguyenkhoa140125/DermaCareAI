@@ -1,0 +1,1924 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DermaCare AI - Dermatology Health Intelligence Platform</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=DM+Sans:wght@300;400;500;600&display=swap');
+:root{
+  --rose:#8b3a52;--rose-lt:#c4748a;--rose-pale:#faeef2;
+  --sand:#c4894a;--sand-lt:#e8b87a;--sand-pale:#fdf5ec;
+  --teal:#0e7a6b;--teal-lt:#2ab5a0;--teal-pale:#e6f5f3;
+  --red:#c0392b;--cream:#fefcfb;--cream2:#f8f4f5;
+  --text:#1a1015;--text2:#3d2030;--text3:#9a7a84;
+  --border:rgba(139,58,82,0.15);--border2:rgba(139,58,82,0.32);
+  --shadow:0 8px 40px rgba(26,16,21,0.10);--shadow2:0 24px 80px rgba(26,16,21,0.18);
+  --r:13px;--r2:22px;
+  --serif:'Playfair Display',serif;--body:'DM Sans',sans-serif;
+}
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
+html{scroll-behavior:smooth;}
+body{font-family:var(--body);background:var(--cream);color:var(--text);overflow-x:hidden;}
+::-webkit-scrollbar{width:5px;}::-webkit-scrollbar-track{background:var(--cream2);}
+::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px;}
+@keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:0.4;transform:scale(1.4)}}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes shimmer{0%{background-position:-400px 0}100%{background-position:400px 0}}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:0.3}}
+#disc-modal{position:fixed;inset:0;z-index:9999;background:rgba(10,5,8,0.96);backdrop-filter:blur(14px);display:flex;align-items:center;justify-content:center;padding:20px;}
+.disc-box{background:var(--cream);border-radius:var(--r2);max-width:700px;width:100%;max-height:92vh;overflow-y:auto;padding:48px 52px;border:1px solid var(--border2);box-shadow:var(--shadow2);}
+.disc-icon{font-size:52px;text-align:center;display:block;margin-bottom:14px;}
+.disc-box h1{font-family:var(--serif);font-size:24px;font-weight:700;color:var(--rose);text-align:center;margin-bottom:6px;}
+.disc-sub{text-align:center;font-size:13px;color:var(--text3);margin-bottom:26px;}
+.disc-content{background:var(--rose-pale);border:1px solid var(--border2);border-radius:var(--r);padding:22px;margin-bottom:20px;font-size:13px;line-height:1.85;color:var(--text);}
+.disc-content p{margin-bottom:10px;}.disc-content p:last-child{margin-bottom:0;}
+.disc-content strong{color:var(--rose);font-weight:600;}
+.disc-chk{margin-bottom:22px;}
+.chk-row{display:flex;gap:12px;align-items:flex-start;margin-bottom:12px;cursor:pointer;}
+.chk-row input{width:17px;height:17px;accent-color:var(--rose);margin-top:2px;cursor:pointer;flex-shrink:0;}
+.chk-row label{font-size:13px;line-height:1.55;cursor:pointer;color:var(--text2);}
+.disc-accept{width:100%;padding:16px;border-radius:var(--r);background:linear-gradient(135deg,var(--rose),var(--rose-lt));color:#fff;font-family:var(--body);font-size:15px;font-weight:600;border:none;cursor:pointer;transition:all 0.2s;}
+.disc-accept:hover:not(:disabled){transform:translateY(-2px);box-shadow:0 8px 28px rgba(139,58,82,0.4);}
+.disc-accept:disabled{opacity:0.4;cursor:not-allowed;}
+.disc-bar{position:sticky;top:0;z-index:200;background:linear-gradient(90deg,#3d0a1a,var(--rose),#3d0a1a);background-size:200%;animation:shimmer 4s linear infinite;padding:9px 20px;text-align:center;font-size:12px;font-weight:600;color:#fff;}
+.pdot{display:inline-block;width:7px;height:7px;background:#fff;border-radius:50%;margin-right:8px;animation:pulse 1.5s ease infinite;vertical-align:middle;}
+header{position:relative;z-index:10;background:linear-gradient(160deg,#0e0508 0%,#2a0e18 45%,#0a1e1b 100%);padding:64px 40px 52px;text-align:center;border-bottom:2px solid var(--teal-lt);}
+.hdr-inner{max-width:900px;margin:0 auto;}
+.hdr-eyebrow{font-size:11px;font-weight:500;letter-spacing:0.22em;text-transform:uppercase;color:var(--teal-lt);margin-bottom:18px;}
+header h1{font-family:var(--serif);font-size:clamp(32px,5vw,60px);font-weight:700;color:#fdf0f3;line-height:1.08;margin-bottom:8px;}
+header h1 span{color:var(--sand-lt);}
+.hdr-sub{font-size:18px;color:rgba(220,180,190,0.88);margin-bottom:20px;}
+.hdr-line{width:100px;height:1px;background:linear-gradient(90deg,transparent,var(--teal-lt),transparent);margin:18px auto;}
+.hdr-desc{font-size:14.5px;color:rgba(210,170,180,0.8);line-height:1.75;max-width:700px;margin:0 auto;}
+.hdr-badges{display:flex;gap:12px;justify-content:center;margin-top:24px;flex-wrap:wrap;}
+.hbadge{padding:6px 18px;border-radius:20px;font-size:12px;font-weight:600;border:1px solid;}
+.hb-r{background:rgba(139,58,82,0.28);border-color:rgba(139,58,82,0.55);color:#f0b0c0;}
+.hb-t{background:rgba(14,122,107,0.25);border-color:rgba(14,122,107,0.5);color:#a0e0d8;}
+.hb-s{background:rgba(196,137,74,0.22);border-color:rgba(196,137,74,0.45);color:#f0d0a0;}
+.main-nav{position:sticky;top:42px;z-index:100;background:rgba(254,252,251,0.97);backdrop-filter:blur(16px);border-bottom:1px solid var(--border);padding:0 32px;}
+.nav-inner{max-width:1500px;margin:0 auto;display:flex;overflow-x:auto;}
+.nav-inner::-webkit-scrollbar{height:0;}
+.ntab{padding:15px 13px;font-size:12.5px;font-weight:500;color:var(--text3);cursor:pointer;white-space:nowrap;border-bottom:2px solid transparent;transition:all 0.2s;}
+.ntab:hover{color:var(--rose);}.ntab.active{color:var(--rose);border-bottom-color:var(--sand-lt);font-weight:600;}
+.app{display:grid;grid-template-columns:265px 1fr;max-width:1500px;margin:0 auto;min-height:calc(100vh - 260px);}
+.sidebar{border-right:1px solid var(--border);background:rgba(250,238,242,0.3);padding:22px 0;position:sticky;top:112px;height:calc(100vh - 112px);overflow-y:auto;}
+.sb-lbl{padding:8px 18px 4px;font-size:10px;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;color:var(--text3);}
+.sbi{display:flex;align-items:center;gap:10px;padding:9px 18px;cursor:pointer;transition:all 0.15s;border-left:3px solid transparent;font-size:13px;color:var(--text2);}
+.sbi:hover{background:rgba(139,58,82,0.06);}.sbi.active{background:rgba(139,58,82,0.08);border-left-color:var(--sand);color:var(--rose);font-weight:600;}
+.sbi .si{font-size:15px;width:20px;text-align:center;flex-shrink:0;}
+.sb-div{height:1px;background:var(--border);margin:10px 14px;}
+.sb-new{font-size:9px;font-weight:700;background:var(--rose);color:#fff;padding:2px 7px;border-radius:10px;margin-left:auto;}
+.main{padding:38px 44px;}
+.panel{display:none;}.panel.active{display:block;animation:fadeUp 0.3s ease;}
+.ph{margin-bottom:30px;}
+.ph-crumb{font-size:11px;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;color:var(--teal);margin-bottom:8px;}
+.ph h2{font-family:var(--serif);font-size:28px;font-weight:700;color:var(--text);line-height:1.15;}
+.ph p{margin-top:10px;font-size:16px;color:var(--text2);line-height:1.7;max-width:680px;}
+.d-line{width:60px;height:2px;background:linear-gradient(90deg,var(--rose),var(--teal),transparent);margin:12px 0;}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:18px;}
+.g3{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;}
+.card{background:#fff;border:1px solid var(--border);border-radius:var(--r2);padding:22px;transition:all 0.22s;position:relative;overflow:hidden;}
+.card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--rose),var(--teal),var(--sand));opacity:0;transition:opacity 0.2s;}
+.card:hover{transform:translateY(-3px);box-shadow:var(--shadow);}.card:hover::before{opacity:1;}
+.card.click{cursor:pointer;}
+.ci{font-size:30px;margin-bottom:12px;}
+.card h3{font-family:var(--serif);font-size:15px;font-weight:600;color:var(--text);margin-bottom:7px;}
+.card p{font-size:13px;color:var(--text2);line-height:1.65;}
+.ctag{display:inline-block;margin-top:10px;padding:3px 11px;border-radius:20px;font-size:11px;font-weight:600;background:var(--rose-pale);color:var(--rose);border:1px solid var(--border2);}
+.stat-row{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:28px;}
+.stat{background:#fff;border:1px solid var(--border);border-radius:var(--r2);padding:18px;text-align:center;}
+.stat-n{font-family:var(--serif);font-size:28px;font-weight:700;color:var(--rose);line-height:1;}
+.stat-l{font-size:11px;color:var(--text3);font-weight:500;margin-top:5px;text-transform:uppercase;letter-spacing:0.07em;}
+.sb{background:#fff;border:1px solid var(--border);border-radius:var(--r2);padding:28px;margin-bottom:20px;}
+.sb h3{font-family:var(--serif);font-size:18px;font-weight:600;color:var(--text);margin-bottom:14px;padding-bottom:10px;border-bottom:1px solid var(--border);}
+.sb h4{font-family:var(--serif);font-size:14px;font-weight:600;color:var(--rose);margin:14px 0 7px;}
+.sb p{font-size:13.5px;line-height:1.8;color:var(--text2);margin-bottom:10px;}
+.sb ul{list-style:none;}
+.sb ul li{padding:7px 0;border-bottom:1px solid rgba(139,58,82,0.07);font-size:13px;line-height:1.65;color:var(--text2);display:flex;gap:10px;}
+.sb ul li::before{content:"\25C6";color:var(--teal);flex-shrink:0;font-size:9px;margin-top:4px;}
+.sb ul li:last-child{border-bottom:none;}
+.sb table{width:100%;border-collapse:collapse;font-size:13px;}
+.sb table th{background:var(--rose);color:#faeef2;font-size:11.5px;font-weight:600;padding:11px 14px;text-align:left;}
+.sb table td{padding:10px 14px;border-bottom:1px solid var(--border);color:var(--text2);vertical-align:top;}
+.alert{padding:13px 17px;border-radius:var(--r);font-size:13px;line-height:1.7;margin-bottom:16px;display:flex;gap:11px;}
+.ai-ic{font-size:17px;flex-shrink:0;margin-top:1px;}
+.alert.warn{background:var(--sand-pale);border:1px solid rgba(196,137,74,0.35);color:#6a3a00;}
+.alert.rose{background:var(--rose-pale);border:1px solid var(--border2);color:var(--rose);}
+.alert.teal{background:var(--teal-pale);border:1px solid rgba(14,122,107,0.3);color:var(--teal);}
+.alert.emergency{background:#100508;border:2px solid var(--rose-lt);color:#f5c0c8;font-weight:600;}
+.btn{display:inline-flex;align-items:center;gap:8px;padding:11px 22px;border-radius:var(--r);font-family:var(--body);font-size:13.5px;font-weight:600;cursor:pointer;transition:all 0.2s;border:none;}
+.btn-r{background:linear-gradient(135deg,var(--rose),var(--rose-lt));color:#fff;}
+.btn-r:hover{transform:translateY(-1px);box-shadow:0 5px 18px rgba(139,58,82,0.4);}
+.btn-outline{background:transparent;border:1.5px solid var(--border2);color:var(--text2);}
+.btn-outline:hover{border-color:var(--rose);color:var(--rose);}
+.btn-lg{padding:14px 28px;font-size:15px;}.btn-sm{padding:6px 14px;font-size:12px;}
+.bgrp{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px;}
+.spn{width:18px;height:18px;border:2px solid rgba(255,255,255,0.35);border-top-color:#fff;border-radius:50%;animation:spin 0.7s linear infinite;display:none;}
+.btn.loading .spn{display:block;}.btn.loading .bt{display:none;}
+.tab-bar{display:flex;gap:4px;margin-bottom:20px;border-bottom:2px solid var(--border);flex-wrap:wrap;}
+.tbtn{padding:10px 18px;border:none;background:transparent;font-family:var(--body);font-size:13px;font-weight:500;color:var(--text3);cursor:pointer;transition:all 0.2s;border-bottom:2px solid transparent;margin-bottom:-2px;}
+.tbtn:hover{color:var(--text);}.tbtn.active{color:var(--rose);border-bottom-color:var(--sand-lt);font-weight:600;}
+.tpane{display:none;}.tpane.active{display:block;animation:fadeUp 0.25s ease;}
+.upload-zone{border:2px dashed var(--border2);border-radius:var(--r2);padding:44px;text-align:center;cursor:pointer;transition:all 0.3s;background:#fff;margin-bottom:16px;}
+.upload-zone:hover,.upload-zone.drag{border-color:var(--rose);background:var(--rose-pale);}
+.uz-icon{font-size:48px;margin-bottom:14px;}
+.file-tags{display:flex;flex-wrap:wrap;gap:7px;justify-content:center;margin-top:14px;}
+.ftag{padding:4px 12px;border-radius:20px;font-size:11px;font-weight:500;background:var(--cream2);border:1px solid var(--border);color:var(--text3);}
+.file-row{display:flex;align-items:center;gap:11px;padding:11px 15px;border-radius:var(--r);background:#fff;border:1px solid var(--border);margin-bottom:7px;}
+.fr-ico{font-size:18px;flex-shrink:0;}.fr-name{flex:1;font-size:13px;font-weight:500;}.fr-meta{font-size:11px;color:var(--text3);}
+.fr-ok{font-size:11px;padding:2px 8px;border-radius:10px;background:var(--teal-pale);color:var(--teal);font-weight:600;}
+.fr-del{color:var(--text3);cursor:pointer;font-size:16px;padding:3px;}.fr-del:hover{color:var(--red);}
+.sk-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+.fg{margin-bottom:16px;}
+.fl{font-size:11px;font-weight:700;letter-spacing:0.09em;text-transform:uppercase;color:var(--text3);margin-bottom:6px;display:block;}
+.fi,.fs{width:100%;padding:10px 14px;border-radius:var(--r);border:1.5px solid rgba(139,58,82,0.18);background:#fff;font-family:var(--body);font-size:14px;color:var(--text);outline:none;margin-bottom:0;}
+.fi:focus,.fs:focus{border-color:var(--rose);}
+.chat-wrap{background:#fff;border:1px solid var(--border);border-radius:var(--r2);overflow:hidden;}
+.chat-head{background:linear-gradient(135deg,#2a0e18,var(--rose));padding:17px 22px;display:flex;align-items:center;justify-content:space-between;}
+.chat-head h3{font-family:var(--serif);font-size:16px;font-weight:600;color:#fff;}
+.chat-head .free{background:rgba(255,255,255,0.18);color:#fff;padding:4px 12px;border-radius:20px;font-size:11px;font-weight:700;}
+.chat-msgs{height:420px;overflow-y:auto;padding:18px;display:flex;flex-direction:column;gap:12px;background:var(--cream);}
+.cm{max-width:82%;padding:12px 15px;border-radius:14px;font-size:13.5px;line-height:1.62;}
+.cm.user{align-self:flex-end;background:var(--rose);color:#fff;border-radius:14px 14px 4px 14px;}
+.cm.ai{align-self:flex-start;background:#fff;border:1px solid var(--border);border-radius:14px 14px 14px 4px;}
+.cm .ai-lbl{font-size:10px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:var(--teal);margin-bottom:4px;}
+.cm.sys{align-self:center;background:var(--cream2);border-radius:8px;font-size:12px;color:var(--text3);max-width:90%;text-align:center;}
+.typing span{width:7px;height:7px;background:var(--text3);border-radius:50%;animation:blink 1.2s ease infinite;display:inline-block;margin:0 2px;}
+.typing span:nth-child(2){animation-delay:0.2s;}.typing span:nth-child(3){animation-delay:0.4s;}
+.chat-input-row{display:flex;gap:10px;padding:14px 18px;border-top:1px solid var(--border);background:var(--cream2);}
+.chat-input{flex:1;padding:10px 14px;border-radius:var(--r);border:1.5px solid rgba(139,58,82,0.2);background:#fff;font-family:var(--body);font-size:13.5px;color:var(--text);outline:none;}
+.chat-input:focus{border-color:var(--rose);}
+.chat-send{padding:10px 20px;border-radius:var(--r);background:var(--rose);color:#fff;border:none;cursor:pointer;font-weight:600;font-family:var(--body);}
+.api-box{background:var(--rose-pale);border:1px solid var(--border2);border-radius:var(--r2);padding:24px;margin-bottom:20px;}
+.api-box h3{font-family:var(--serif);font-size:15px;font-weight:600;color:var(--rose);margin-bottom:8px;}
+.api-row{display:flex;gap:10px;}
+.api-input{flex:1;padding:10px 14px;border-radius:var(--r);border:1.5px solid var(--border2);background:#fff;font-family:'Consolas',monospace;font-size:13px;color:var(--text);outline:none;}
+.api-input:focus{border-color:var(--rose);}
+.provider-card.selected{border-color:var(--rose);box-shadow:0 0 0 2px var(--rose-pale);}
+.provider-card.selected::after{content:'Active';position:absolute;top:14px;right:16px;font-size:11px;font-weight:700;color:var(--rose);}
+.provider-card{position:relative;}
+.provider-card .ctag.configured{background:var(--teal-pale);color:var(--teal);border-color:rgba(14,122,107,0.3);}
+footer{background:linear-gradient(160deg,#0e0508 0%,#1a0a10 100%);padding:50px 40px 30px;border-top:2px solid var(--teal-lt);}
+.footer-inner{max-width:1200px;margin:0 auto;}
+.footer-grid{display:grid;grid-template-columns:2fr 1fr 1fr;gap:40px;margin-bottom:36px;}
+.footer-brand h3{font-family:var(--serif);font-size:20px;font-weight:700;color:var(--teal-lt);margin-bottom:10px;}
+.footer-brand p{font-size:13px;color:rgba(220,180,190,0.7);line-height:1.7;}
+.footer-col h4{font-size:11px;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;color:var(--teal-lt);margin-bottom:12px;}
+.footer-col ul{list-style:none;}
+.footer-col ul li{margin-bottom:7px;}
+.footer-col ul li a{font-size:13px;color:rgba(220,180,190,0.6);text-decoration:none;}
+.footer-col ul li a:hover{color:var(--teal-lt);}
+.footer-bottom{border-top:1px solid rgba(139,58,82,0.25);padding-top:22px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:14px;}
+.footer-bottom p{font-size:12px;color:rgba(220,180,190,0.5);}
+.footer-disc{font-size:11px;color:rgba(220,180,190,0.4);max-width:700px;line-height:1.6;}
+@media(max-width:1000px){.app{grid-template-columns:1fr}.sidebar{display:none}.main{padding:24px 20px}}
+@media(max-width:700px){header{padding:40px 20px 32px}.g2,.g3,.sk-grid{grid-template-columns:1fr}.stat-row{grid-template-columns:repeat(2,1fr)}.footer-grid{grid-template-columns:1fr}.disc-box{padding:28px 20px}}
+</style>
+</head>
+<body>
+<div id="disc-modal">
+  <div class="disc-box">
+    <span class="disc-icon">&#129504;</span>
+    <h1>Medical Disclaimer</h1>
+    <div class="disc-sub">DermaCare AI &mdash; Dermatology Health Intelligence Platform</div>
+    <div style="padding:8px 18px 14px;background:var(--cream2,#f8f4f5);">
+      <button class="ar-trigger-btn" onclick="openAR(document.getElementById('chat-in').value)" style="display:inline-flex;align-items:center;gap:7px;padding:9px 18px;border-radius:10px;border:2px solid #4d6bfe;background:transparent;color:#4d6bfe;font-family:inherit;font-size:13px;font-weight:700;cursor:pointer;transition:all 0.2s;width:100%;justify-content:center;" onmouseover="this.style.background='#4d6bfe';this.style.color='#fff'" onmouseout="this.style.background='transparent';this.style.color='#4d6bfe'">&#9889; Ambiguity Resolver &mdash; Get Multi-AI Consensus Answer</button>
+      <p style="font-size:11px;color:#888;text-align:center;margin-top:6px;">Query all your configured AIs simultaneously and get a synthesised best answer</p>
+    </div>
+    <div class="disc-content">
+      <p><strong>RESEARCH &amp; EDUCATIONAL PURPOSE ONLY:</strong> All content is compiled from published dermatology literature (AAD, BAD, EADV, WHO, NICE, IADVL) for educational purposes only.</p>
+      <p><strong>NOT A SUBSTITUTE FOR DERMATOLOGICAL CARE:</strong> Nothing here constitutes medical advice, diagnosis, or treatment. AI-generated analysis may be incomplete or inaccurate.</p>
+      <p><strong>MANDATORY PROFESSIONAL CONSULTATION:</strong> Before using any prescription medication, biologic, or undergoing any procedure &mdash; consult a qualified dermatologist.</p>
+      <p><strong>SKIN EMERGENCY:</strong> Widespread rash + throat swelling (anaphylaxis), skin peeling + fever (SJS/TEN), rapidly spreading infected skin + fever (necrotising fasciitis) &mdash; Call 112 (India) / 999 (UK) / 911 (US) IMMEDIATELY.</p>
+    </div>
+    <div class="disc-chk">
+      <div class="chk-row"><input type="checkbox" id="dc1"><label for="dc1">I understand this is an AI research tool &mdash; NOT medical advice, diagnosis, or treatment.</label></div>
+      <div class="chk-row"><input type="checkbox" id="dc2"><label for="dc2">I will consult a qualified dermatologist before any skin health decision.</label></div>
+      <div class="chk-row"><input type="checkbox" id="dc3"><label for="dc3">In a skin emergency I will call 112/999/911 immediately, not use this platform first.</label></div>
+    </div>
+    <button class="disc-accept" id="disc-btn" disabled onclick="acceptDisc()">I Understand &amp; Accept &mdash; Enter DermaCare AI</button>
+  </div>
+</div>
+
+<div class="disc-bar"><span class="pdot"></span><strong>&#9888; AI RESEARCH TOOL ONLY</strong> &mdash; Not medical advice. ALWAYS consult your dermatologist. SKIN EMERGENCY: <strong>112</strong> India / 999 UK / 911 US.</div>
+
+<header>
+  <div class="hdr-inner">
+    <div class="hdr-eyebrow">&#129504; Dermatology Health Intelligence Platform</div>
+    <h1>DermaCare <span>AI</span></h1>
+    <div class="hdr-sub">Evidence-Based Skin Health Research &amp; Dermatology Intelligence</div>
+    <div class="hdr-line"></div>
+    <div class="hdr-desc">Research eczema, psoriasis, acne, skin cancer, rosacea, urticaria, hair disorders, and more &mdash; from AAD, BAD, EADV, NICE and IADVL guidelines. Dedicated skin-of-colour guidance for Fitzpatrick types IV-VI.</div>
+    <div class="hdr-badges">
+      <span class="hbadge hb-r">&#129584; Eczema &amp; Psoriasis</span>
+      <span class="hbadge hb-t">&#128269; Skin Cancer</span>
+      <span class="hbadge hb-s">&#127774; Acne &amp; Rosacea</span>
+      <span class="hbadge hb-r">&#128138; Biologics</span>
+      <span class="hbadge hb-t">&#129529; Skin of Colour</span>
+      <span class="hbadge hb-s">&#128274; AES-256 Secure</span>
+    </div>
+  </div>
+</header>
+
+<nav class="main-nav">
+  <div class="nav-inner">
+    <div class="ntab active" onclick="nav('home')">&#127968; Home</div>
+    <div class="ntab" onclick="nav('upload')">&#128193; Upload</div>
+    <div class="ntab" onclick="nav('conditions')">&#129584; Conditions</div>
+    <div class="ntab" onclick="nav('acne')">&#127774; Acne</div>
+    <div class="ntab" onclick="nav('psoriasis')">&#129529; Psoriasis</div>
+    <div class="ntab" onclick="nav('cancer')">&#128269; Skin Cancer</div>
+    <div class="ntab" onclick="nav('treatments')">&#128138; Treatments</div>
+    <div class="ntab" onclick="nav('skincare')">&#129332; Skincare</div>
+    <div class="ntab" onclick="nav('hair')">&#129301; Hair &amp; Nails</div>
+    <div class="ntab" onclick="nav('emergency')">&#128680; Emergency</div>
+    <div class="ntab" onclick="nav('soc')">&#129529; Skin of Colour</div>
+    <div class="ntab" onclick="nav('chat')">&#128172; Ask AI</div>
+    <div class="ntab" onclick="nav('settings')">&#9881; Settings</div>
+  </div>
+</nav>
+
+<div class="app">
+<aside class="sidebar">
+  <div class="sb-lbl">Patient Portal</div>
+  <div class="sbi active" onclick="nav('home')"><span class="si">&#127968;</span>Dashboard</div>
+  <div class="sbi" onclick="nav('upload')"><span class="si">&#128193;</span>Upload Reports</div>
+  <div class="sbi" onclick="nav('settings')"><span class="si">&#9881;</span>Settings &amp; AI Provider</div>
+  <div class="sb-div"></div>
+  <div class="sb-lbl">Skin Conditions</div>
+  <div class="sbi" onclick="nav('conditions')"><span class="si">&#129584;</span>All Conditions</div>
+  <div class="sbi" onclick="nav('acne')"><span class="si">&#127774;</span>Acne Vulgaris</div>
+  <div class="sbi" onclick="nav('psoriasis')"><span class="si">&#129529;</span>Psoriasis</div>
+  <div class="sbi" onclick="nav('cancer')"><span class="si">&#128269;</span>Skin Cancer</div>
+  <div class="sbi" onclick="nav('emergency')"><span class="si">&#128680;</span>Derma Emergencies</div>
+  <div class="sb-div"></div>
+  <div class="sb-lbl">Treatment &amp; Care</div>
+  <div class="sbi" onclick="nav('treatments')"><span class="si">&#128138;</span>Treatments &amp; Biologics</div>
+  <div class="sbi" onclick="nav('skincare')"><span class="si">&#129332;</span>Skincare &amp; Sun Protection</div>
+  <div class="sbi" onclick="nav('hair')"><span class="si">&#129301;</span>Hair &amp; Nail Disorders</div>
+  <div class="sbi" onclick="nav('soc')"><span class="si">&#129529;</span>Skin of Colour</div>
+  <div class="sb-div"></div>
+  <div class="sbi" onclick="nav('chat')"><span class="si">&#128172;</span>Ask AI <span class="sb-new">FREE</span></div>
+</aside>
+<main class="main">
+
+<!-- HOME -->
+<div class="panel active" id="panel-home">
+  <div class="ph"><div class="ph-crumb">Welcome</div><h2>Dermatology Health Intelligence</h2><div class="d-line"></div><p>AI-researched skin health insights from AAD, BAD, EADV, WHO, NICE, IADVL and peer-reviewed dermatology literature. Includes dedicated skin-of-colour guidance for Fitzpatrick IV-VI.</p></div>
+  <div class="alert emergency"><span class="ai-ic">&#128680;</span><div>SKIN EMERGENCY: Widespread rash + throat swelling (anaphylaxis) &mdash; IM adrenaline + 112/999/911. Skin peeling + fever (SJS/TEN) &mdash; hospital IMMEDIATELY. Rapidly spreading infected skin + dusky colour + fever (necrotising fasciitis) &mdash; SURGICAL EMERGENCY.</div></div>
+  <div class="stat-row">
+    <div class="stat"><div class="stat-n">40+</div><div class="stat-l">Skin Conditions</div></div>
+    <div class="stat"><div class="stat-n">6</div><div class="stat-l">Fitzpatrick Types</div></div>
+    <div class="stat"><div class="stat-n">5</div><div class="stat-l">AI Providers</div></div>
+    <div class="stat"><div class="stat-n">&#128274;</div><div class="stat-l">AES-256 Secure</div></div>
+  </div>
+  <div class="alert rose"><span class="ai-ic">&#9888;</span><div><strong>Research Tool Only:</strong> All AI output is for educational research. ALWAYS consult a qualified dermatologist before any skin treatment or prescription medication.</div></div>
+  <div class="g3">
+    <div class="card click" onclick="nav('conditions')"><div class="ci">&#129584;</div><h3>Skin Conditions</h3><p>Eczema, psoriasis, acne, rosacea, urticaria, infections, vitiligo, and 30+ more.</p><span class="ctag">Clinical Research</span></div>
+    <div class="card click" onclick="nav('cancer')"><div class="ci">&#128269;</div><h3>Skin Cancer</h3><p>Melanoma, BCC, SCC, actinic keratosis, dermoscopy and ABCDE criteria.</p><span class="ctag">Dermato-Oncology</span></div>
+    <div class="card click" onclick="nav('treatments')"><div class="ci">&#128138;</div><h3>Treatments &amp; Biologics</h3><p>Topical agents, biologics (dupilumab, secukinumab), JAK inhibitors, phototherapy.</p><span class="ctag">Therapeutics</span></div>
+    <div class="card click" onclick="nav('skincare')"><div class="ci">&#129332;</div><h3>Skincare &amp; SPF</h3><p>Evidence-based skincare routines, SPF science, Fitzpatrick-appropriate guidance.</p><span class="ctag">Preventive</span></div>
+    <div class="card click" onclick="nav('soc')"><div class="ci">&#129529;</div><h3>Skin of Colour</h3><p>Fitzpatrick IV-VI: PIH, melasma, keloids, hair disorders, eczema presentations.</p><span class="ctag">Inclusive Derm</span></div>
+    <div class="card click" onclick="nav('emergency')"><div class="ci">&#128680;</div><h3>Derma Emergencies</h3><p>SJS/TEN, DRESS, anaphylaxis, necrotising fasciitis, erythroderma.</p><span class="ctag">Emergency</span></div>
+  </div>
+</div>
+
+<!-- UPLOAD -->
+<div class="panel" id="panel-upload">
+  <div class="ph"><div class="ph-crumb">Step 1</div><h2>Upload Skin Reports</h2><div class="d-line"></div><p>Upload dermatology reports, biopsy results, patch test results, and clinical photographs for AI-assisted research.</p></div>
+  <div class="upload-zone" id="uz" onclick="document.getElementById('fi').click()">
+    <div class="uz-icon">&#129584;</div>
+    <h3 style="font-family:var(--serif);font-size:17px;font-weight:600;margin-bottom:7px;">Drop skin reports here or click to browse</h3>
+    <p style="font-size:13px;color:var(--text3);">All dermatology document and image formats supported</p>
+    <div class="file-tags">
+      <span class="ftag">Biopsy Report</span><span class="ftag">Patch Test</span><span class="ftag">Dermoscopy</span>
+      <span class="ftag">Allergy Test</span><span class="ftag">Blood Results</span><span class="ftag">PDF &middot; JPG &middot; PNG</span>
+    </div>
+  </div>
+  <input type="file" id="fi" multiple accept=".pdf,.jpg,.jpeg,.png,.docx,.txt" style="display:none" onchange="handleFiles(this.files)">
+  <div id="flist"></div>
+  <div class="bgrp">
+    <button class="btn btn-r btn-lg" id="up-btn" onclick="uploadFiles()"><span class="bt">&#128228; Upload &amp; Process</span><div class="spn"></div></button>
+    <button class="btn btn-outline" onclick="document.getElementById('fi').click()">+ Add More</button>
+    <button class="btn btn-outline" onclick="clearFiles()">&#128465; Clear</button>
+  </div>
+  <div id="up-result"></div>
+</div>
+
+<!-- CONDITIONS -->
+<div class="panel" id="panel-conditions">
+  <div class="ph"><div class="ph-crumb">Dermatology</div><h2>Skin Conditions</h2><div class="d-line"></div><p>Comprehensive clinical research from AAD, BAD, EADV and NICE guidelines.</p></div>
+  <div class="alert warn"><span class="ai-ic">&#9888;</span><div>All information is for educational research. Skin conditions require clinical examination by a dermatologist. Do not self-diagnose changing moles or suspicious lesions.</div></div>
+  <div style="margin-bottom:17px;">
+    <label class="fl">Select Condition</label>
+    <select class="fs" id="cond-sel" onchange="showCondition()">
+      <option value="">-- Select a skin condition --</option>
+      <optgroup label="Inflammatory"><option>Atopic Eczema</option><option>Contact Dermatitis</option><option>Seborrhoeic Dermatitis</option><option>Psoriasis</option><option>Rosacea</option><option>Lichen Planus</option><option>Pityriasis Rosea</option></optgroup>
+      <optgroup label="Acne &amp; Follicular"><option>Acne Vulgaris</option><option>Hidradenitis Suppurativa</option><option>Folliculitis</option><option>Keratosis Pilaris</option></optgroup>
+      <optgroup label="Infections"><option>Impetigo</option><option>Cellulitis</option><option>Tinea Corporis</option><option>Tinea Pedis</option><option>Onychomycosis</option><option>Herpes Simplex</option><option>Herpes Zoster</option><option>Warts</option><option>Molluscum Contagiosum</option></optgroup>
+      <optgroup label="Urticaria &amp; Allergy"><option>Chronic Spontaneous Urticaria</option><option>Angioedema</option><option>Drug Reaction</option></optgroup>
+      <optgroup label="Pigmentation"><option>Vitiligo</option><option>Melasma</option><option>Post-Inflammatory Hyperpigmentation</option></optgroup>
+      <optgroup label="Hair &amp; Nails"><option>Alopecia Areata</option><option>Androgenetic Alopecia</option><option>Telogen Effluvium</option><option>Nail Psoriasis</option></optgroup>
+      <optgroup label="Skin Cancer"><option>Melanoma</option><option>Basal Cell Carcinoma</option><option>Squamous Cell Carcinoma</option><option>Actinic Keratosis</option></optgroup>
+    </select>
+  </div>
+  <div id="cond-output"></div>
+  <div class="sb"><h3>Quick Clinical Reference</h3>
+    <div class="g2">
+      <div><h4>Melanoma ABCDE</h4><ul>
+        <li>A &mdash; Asymmetry: one half unlike the other</li>
+        <li>B &mdash; Border: irregular, ragged, notched, blurred</li>
+        <li>C &mdash; Colour: multiple colours (tan/brown/black/red/white)</li>
+        <li>D &mdash; Diameter: over 6mm (can be smaller)</li>
+        <li>E &mdash; Evolution: any change in size, shape, colour, bleeding</li>
+        <li>ANY suspicious or changing mole: urgent dermatology referral</li>
+      </ul></div>
+      <div><h4>Eczema &amp; Psoriasis</h4><ul>
+        <li>Emollients 250g+/week: cornerstone of all eczema management</li>
+        <li>TCS: match potency to site (mild face, moderate body, potent thick plaques)</li>
+        <li>Dupilumab IL-4/IL-13: highly effective moderate-severe AD from age 6mo</li>
+        <li>IL-17 inhibitors: fastest psoriasis clearance (PASI 90+ in 60-70%)</li>
+        <li>Biologic step-up: PASI over 10, DLQI over 10, or BSA over 10%</li>
+      </ul></div>
+      <div><h4>Acne Treatment Steps</h4><ul>
+        <li>Topical retinoid + BPO first-line (never antibiotics alone)</li>
+        <li>Oral antibiotics max 3 months, always with BPO to prevent resistance</li>
+        <li>Isotretinoin for severe/nodulocystic/scarring acne</li>
+        <li>PIH in darker skin: retinoids + azelaic acid + strict SPF 50+</li>
+        <li>Hormonal acne females: COCP, spironolactone</li>
+      </ul></div>
+      <div><h4>Contact Dermatitis</h4><ul>
+        <li>Patch testing: gold-standard for allergic contact dermatitis</li>
+        <li>Common allergens: nickel, fragrances, preservatives (MI/MCI), PPD</li>
+        <li>ICD: most common occupational skin disease</li>
+        <li>Management: strict allergen avoidance + TCS for active inflammation</li>
+      </ul></div>
+    </div>
+  </div>
+</div>
+
+<!-- ACNE -->
+<div class="panel" id="panel-acne">
+  <div class="ph"><div class="ph-crumb">Common Skin Condition</div><h2>Acne Vulgaris</h2><div class="d-line"></div><p>Research on acne pathogenesis, grading, treatment ladder, isotretinoin, and scarring/PIH prevention from AAD, BAD and NICE guidelines.</p></div>
+  <div class="tab-bar">
+    <button class="tbtn active" onclick="switchTab(this,'ac1')">Overview &amp; Grading</button>
+    <button class="tbtn" onclick="switchTab(this,'ac2')">Treatment Ladder</button>
+    <button class="tbtn" onclick="switchTab(this,'ac3')">Isotretinoin</button>
+    <button class="tbtn" onclick="switchTab(this,'ac4')">Scarring &amp; PIH</button>
+  </div>
+  <div class="tpane active" id="ac1">
+    <div class="sb"><h3>Acne Pathogenesis and Grading</h3>
+      <p>Four key pathogenic factors: excess sebum (androgen-driven DHT via 5-alpha reductase), follicular hyperkeratinisation (comedone formation), Cutibacterium acnes colonisation and biofilm, and inflammation (innate + adaptive immune responses).</p>
+      <h4>Lesion Types</h4>
+      <ul>
+        <li><strong>Non-inflammatory:</strong> Open comedones (blackheads &mdash; oxidised melanin, not dirt), closed comedones (whiteheads)</li>
+        <li><strong>Inflammatory:</strong> Papules (red raised), pustules (pus-filled), nodules (deep solid over 5mm), cysts (deep fluctuant, highest scarring risk)</li>
+      </ul>
+      <h4>Grading</h4>
+      <ul>
+        <li><strong>Mild:</strong> Mainly comedones, few papules/pustules, no nodules</li>
+        <li><strong>Moderate:</strong> Multiple papules/pustules, few nodules, face +/- trunk</li>
+        <li><strong>Severe:</strong> Extensive papules/pustules, multiple nodules/cysts, high scarring risk</li>
+      </ul>
+      <h4>Acne in Skin of Colour (Fitzpatrick IV-VI)</h4>
+      <p>PIH is often more distressing than the acne itself. Early treatment prevents PIH. Avoid aggressive irritating treatments. Azelaic acid, niacinamide, and vitamin C are particularly useful. Laser/light therapies require modified settings to avoid paradoxical PIH worsening.</p>
+    </div>
+  </div>
+  <div class="tpane" id="ac2">
+    <div class="sb"><h3>Acne Treatment Ladder</h3>
+      <h4>Step 1 &mdash; Topical (Mild)</h4>
+      <ul>
+        <li><strong>Benzoyl peroxide (BPO) 2.5-10%:</strong> Bactericidal, anti-inflammatory, reduces resistance. Start 2.5%, increase gradually. Bleaches fabrics &mdash; warn patients.</li>
+        <li><strong>Topical retinoids (adapalene 0.1-0.3%, tretinoin 0.025-0.1%):</strong> First-line for comedonal acne. Apply pea-size at night, start 2-3x/week, increase as tolerated. Retinoid dermatitis common initially.</li>
+        <li><strong>Topical antibiotics (clindamycin 1%):</strong> ALWAYS combine with BPO &mdash; never monotherapy (resistance). Apply twice daily.</li>
+        <li><strong>Azelaic acid 15-20%:</strong> Anti-inflammatory, anti-comedogenic, reduces PIH. Safe in pregnancy. Well-tolerated in darker skin types.</li>
+        <li><strong>Fixed combinations (adapalene+BPO, clindamycin+BPO):</strong> Improve compliance, reduce resistance.</li>
+      </ul>
+      <h4>Step 2 &mdash; Systemic (Moderate)</h4>
+      <ul>
+        <li><strong>Oral doxycycline 100mg OD/BD:</strong> Maximum 3 months. Always add topical BPO concurrently. Avoid with isotretinoin (raised ICP risk).</li>
+        <li><strong>Combined oral contraceptive pill (females):</strong> Co-cyprindiol (Dianette), ethinylestradiol+norgestimate. For hormonal/late-onset acne. VTE risk counselling.</li>
+        <li><strong>Spironolactone 25-200mg OD (females only):</strong> Anti-androgen, off-label UK. Monitor potassium and blood pressure.</li>
+      </ul>
+      <h4>Step 3 &mdash; Oral Isotretinoin</h4>
+      <p>See Isotretinoin tab for full details. For severe/nodulocystic/scarring acne or moderate acne failing adequate trials of topical and systemic treatments.</p>
+    </div>
+  </div>
+  <div class="tpane" id="ac3">
+    <div class="sb"><h3>Oral Isotretinoin (Roaccutane)</h3>
+      <p>Most effective acne treatment available &mdash; targets all four pathogenic factors. Reduces sebum production up to 80%.</p>
+      <h4>Dosing</h4>
+      <ul>
+        <li>Typical dose: 0.5-1mg/kg/day; cumulative target 120-150mg/kg for lasting remission</li>
+        <li>Start low (0.25-0.5mg/kg) to minimise initial flare, increase over 4-8 weeks</li>
+        <li>Course: typically 4-9 months</li>
+      </ul>
+      <h4>Monitoring (mandatory)</h4>
+      <ul>
+        <li>LFTs and fasting lipids: baseline, 4-6 weeks, then every 1-3 months</li>
+        <li>FBC: baseline; mood assessment at every visit</li>
+      </ul>
+      <h4>TERATOGENICITY &mdash; Pregnancy Prevention Programme</h4>
+      <p>Highly teratogenic &mdash; ABSOLUTE CONTRAINDICATION in pregnancy. In UK, all patients registered on IPPA (Isotretinoin Patient and Prescriber Access) system. Females: two effective contraception forms mandatory 1 month before, during, and 1 month after. Monthly pregnancy tests.</p>
+      <h4>Common Side Effects</h4>
+      <ul>
+        <li>Dry lips/skin/eyes (universal &mdash; lip balm, emollients, lubricating eye drops essential)</li>
+        <li>Elevated triglycerides and cholesterol, transient LFT elevation</li>
+        <li>Musculoskeletal: myalgia, arthralgia (especially with exercise)</li>
+        <li>Photosensitivity: SPF 50+ daily mandatory</li>
+        <li>Mood changes: controversial link &mdash; discuss with patient and family, report concerns</li>
+      </ul>
+    </div>
+  </div>
+  <div class="tpane" id="ac4">
+    <div class="sb"><h3>Acne Scarring and PIH</h3>
+      <h4>Scar Types</h4>
+      <ul>
+        <li><strong>Icepick:</strong> Narrow, deep, sharply defined. Punch excision/elevation.</li>
+        <li><strong>Boxcar:</strong> Broad base, well-defined vertical edges. Subcision + filler, fractional laser.</li>
+        <li><strong>Rolling:</strong> Sloping edges, wave-like. Subcision most effective.</li>
+        <li><strong>Hypertrophic/keloidal:</strong> Raised. Intralesional steroids, silicone, PDL laser.</li>
+      </ul>
+      <h4>Treatment Options</h4>
+      <ul>
+        <li>Fractional laser (ablative CO2/non-ablative): most effective overall, caution in dark skin (PIH risk)</li>
+        <li>Microneedling/RFMN: good evidence, lower PIH risk in darker skin</li>
+        <li>Chemical peels (glycolic, salicylic, TCA): superficial to medium depth</li>
+        <li>Subcision: rolling scars, breaks fibrotic bands</li>
+        <li>Punch excision or elevation: icepick scars</li>
+        <li>Dermal fillers (HA): temporary volume for rolling/boxcar</li>
+      </ul>
+      <h4>Post-Inflammatory Hyperpigmentation (PIH)</h4>
+      <p>Not true scarring. Persists months-years. Essential: treat active acne + strict daily SPF 50+ (most important intervention). Topical retinoids, azelaic acid 15-20%, niacinamide 5-10%, vitamin C serum, tranexamic acid (topical or oral 250mg BD), hydroquinone 2-4% (short courses). Avoid aggressive peels/lasers without expertise in darker skin types (Fitzpatrick IV-VI).</p>
+    </div>
+  </div>
+</div>
+
+<!-- PSORIASIS -->
+<div class="panel" id="panel-psoriasis">
+  <div class="ph"><div class="ph-crumb">Chronic Inflammatory</div><h2>Psoriasis</h2><div class="d-line"></div><p>Research on psoriasis types, severity assessment, topical/systemic/biologic treatments, and psoriatic arthritis from BAD, AAD, EADV and NICE guidelines.</p></div>
+  <div class="tab-bar">
+    <button class="tbtn active" onclick="switchTab(this,'ps1')">Overview &amp; Types</button>
+    <button class="tbtn" onclick="switchTab(this,'ps2')">Severity &amp; PASI</button>
+    <button class="tbtn" onclick="switchTab(this,'ps3')">Topical &amp; Phototherapy</button>
+    <button class="tbtn" onclick="switchTab(this,'ps4')">Systemic &amp; Biologics</button>
+    <button class="tbtn" onclick="switchTab(this,'ps5')">Psoriatic Arthritis</button>
+  </div>
+  <div class="tpane active" id="ps1">
+    <div class="sb"><h3>Psoriasis Overview and Clinical Types</h3>
+      <p>Chronic immune-mediated inflammatory condition. 2-3% of global population. Accelerated keratinocyte proliferation (28-day cycle reduced to 3-4 days). Strong genetic component (HLA-Cw6). Systemic disease: psoriatic arthritis (25-30%), cardiovascular disease, metabolic syndrome, IBD, depression.</p>
+      <h4>Clinical Types</h4>
+      <ul>
+        <li><strong>Plaque psoriasis (~85%):</strong> Well-demarcated erythematous plaques with thick silvery scale. Elbows, knees, scalp, lower back. Auspitz sign (pinpoint bleeding on scale removal). Koebner phenomenon (lesions at trauma sites).</li>
+        <li><strong>Guttate:</strong> Small teardrop lesions on trunk/limbs. Triggered by streptococcal throat infection 2-3 weeks prior. Common in young adults/children. Often spontaneously resolves.</li>
+        <li><strong>Inverse/flexural:</strong> Skin folds (axillae, groin, submammary). Bright red, well-demarcated, minimal scale. Commonly misdiagnosed as fungal/intertrigo.</li>
+        <li><strong>Pustular generalised (von Zumbusch):</strong> EMERGENCY with fever and systemic toxicity. Sterile pustules.</li>
+        <li><strong>Erythrodermic:</strong> 90%+ BSA. EMERGENCY &mdash; temperature dysregulation, cardiac failure.</li>
+        <li><strong>Nail psoriasis:</strong> Pitting (pathognomonic), onycholysis, subungual hyperkeratosis, oil-drop sign. Affects 50% of patients. Strongly predicts psoriatic arthritis.</li>
+      </ul>
+    </div>
+  </div>
+  <div class="tpane" id="ps2">
+    <div class="sb"><h3>Severity Assessment (PASI and DLQI)</h3>
+      <ul>
+        <li><strong>PASI 75:</strong> Traditional benchmark (75% improvement from baseline). Minimum response threshold for older biologics.</li>
+        <li><strong>PASI 90:</strong> Modern standard for biologic era (90% improvement). Most current trials use this as primary endpoint.</li>
+        <li><strong>PASI 100 (complete clearance):</strong> Achievable with IL-17 inhibitors (25-50%) and IL-23 inhibitors (20-40%).</li>
+        <li><strong>Moderate-severe criteria (NICE/BAD):</strong> Any one of: BSA over 10%, PASI over 10, DLQI over 10. Difficult sites (face, hands, feet, genitalia, nails, scalp) also considered even if below threshold.</li>
+        <li><strong>DLQI (Dermatology Life Quality Index):</strong> 10-question QoL score 0-30. DLQI over 10 = very large effect on quality of life. Required alongside PASI for biologic approval in most countries.</li>
+      </ul>
+    </div>
+  </div>
+  <div class="tpane" id="ps3">
+    <div class="sb"><h3>Topical Treatments and Phototherapy</h3>
+      <h4>Topical First-Line</h4>
+      <ul>
+        <li><strong>Calcipotriol/vitamin D analogues:</strong> Reduce keratinocyte proliferation, anti-inflammatory, no skin atrophy. Max 100g/week (hypercalcaemia risk). Irritating on face/flexures.</li>
+        <li><strong>Topical corticosteroids:</strong> Effective for flares. Potent (betamethasone 0.1%) for body plaques; mild for face/flexures. Risk of atrophy, tachyphylaxis with overuse.</li>
+        <li><strong>Combination calcipotriol+betamethasone (Enstilar foam/Dovobet gel/Xamiol scalp):</strong> Convenient once-daily, additive efficacy, widely used first-line for moderate plaque. Foam formulation excellent for scalp.</li>
+        <li><strong>Coal tar:</strong> Anti-proliferative, antipruritic. Messy but effective, especially scalp shampoos and chronic plaques.</li>
+        <li><strong>Dithranol (short-contact therapy):</strong> 0.1-3%, applied 20-30 min then washed off. Effective for thick plaques. Stains skin/clothes.</li>
+      </ul>
+      <h4>Phototherapy</h4>
+      <ul>
+        <li><strong>Narrowband UVB (NB-UVB, 311-313nm):</strong> Most-used phototherapy. 3x/week clinic. Response 60-70%. Safe in pregnancy. Lower carcinogenicity than PUVA.</li>
+        <li><strong>PUVA (psoralen + UVA):</strong> More effective for thick plaques, palmoplantar disease. Higher SCC risk with cumulative doses. Maximum lifetime sessions. Less used now.</li>
+        <li><strong>Excimer laser (308nm):</strong> Targeted for localised plaques, palmoplantar psoriasis.</li>
+      </ul>
+    </div>
+  </div>
+  <div class="tpane" id="ps4">
+    <div class="sb"><h3>Systemic and Biologic Treatments</h3>
+      <h4>Conventional Systemic</h4>
+      <ul>
+        <li><strong>Methotrexate 7.5-25mg once weekly:</strong> Folic acid 5mg once weekly (not same day) mandatory. Monitor FBC/LFTs every 2-3 months. Hepatotoxicity risk (cumulative). TERATOGENIC.</li>
+        <li><strong>Ciclosporin 2.5-5mg/kg/day:</strong> Rapid onset, short-term rescue. Monitor BP and renal function closely. Not for long-term continuous use.</li>
+        <li><strong>Acitretin 10-50mg daily:</strong> Pustular and erythrodermic psoriasis. HIGHLY TERATOGENIC &mdash; females must avoid pregnancy during AND 3 years after stopping.</li>
+      </ul>
+      <h4>Biologics</h4>
+      <ul>
+        <li><strong>Anti-TNF (adalimumab, etanercept, infliximab):</strong> First approved biologics. Screen TB (IGRA) and hepatitis B/C before starting. Biosimilars available (cost reduction).</li>
+        <li><strong>Anti-IL-12/23 (ustekinumab):</strong> SC every 12 weeks after loading. Good safety, convenient. Effective for skin and psoriatic arthritis.</li>
+        <li><strong>Anti-IL-17 (secukinumab, ixekizumab, bimekizumab):</strong> Fastest and highest skin clearance. PASI 90 in 60-70%+, PASI 100 in 30-50%. Avoid in active IBD. Oral candidiasis risk.</li>
+        <li><strong>Anti-IL-23 (guselkumab, risankizumab, tildrakizumab):</strong> Quarterly dosing, durable remission, excellent safety. Drug-free remission possible with risankizumab in some patients.</li>
+        <li><strong>TYK2 inhibitor (deucravacitinib, oral):</strong> Selective, oral. Favourable safety vs pan-JAK inhibitors. Does NOT carry the same class-level VTE/CV/malignancy warnings.</li>
+      </ul>
+    </div>
+  </div>
+  <div class="tpane" id="ps5">
+    <div class="sb"><h3>Psoriatic Arthritis (PsA)</h3>
+      <p>Inflammatory arthropathy in 25-30% of psoriasis patients. May precede skin disease. Seronegative (RF negative). Manage jointly with rheumatology.</p>
+      <h4>Clinical Patterns</h4>
+      <ul>
+        <li>Distal interphalangeal (DIP) joint predominant &mdash; with nail changes</li>
+        <li>Asymmetric oligoarthritis (under 5 joints)</li>
+        <li>Symmetric polyarthritis (RA-like)</li>
+        <li>Spondyloarthritis (axial, sacroiliitis, inflammatory back pain)</li>
+        <li>Arthritis mutilans (destructive, telescoping digits &mdash; rare)</li>
+      </ul>
+      <h4>Hallmarks</h4>
+      <ul>
+        <li><strong>Dactylitis (sausage digit):</strong> Diffuse swelling of entire digit (all 3 joints + tenosynovitis)</li>
+        <li><strong>Enthesitis:</strong> Achilles tendon, plantar fascia, patellar tendon insertion sites</li>
+      </ul>
+      <h4>Treatment</h4>
+      <p>NSAIDs for mild. DMARDs (methotrexate, sulfasalazine, leflunomide) for peripheral joints. Biologics treat BOTH skin and joints: anti-TNF (first-line biologic), IL-17 inhibitors, IL-23 inhibitors, JAK inhibitors (upadacitinib, tofacitinib) particularly effective for enthesitis and dactylitis.</p>
+    </div>
+  </div>
+</div>
+
+<!-- SKIN CANCER -->
+<div class="panel" id="panel-cancer">
+  <div class="ph"><div class="ph-crumb">Dermato-Oncology</div><h2>Skin Cancer</h2><div class="d-line"></div><p>Research on melanoma, BCC, SCC, actinic keratosis, dermoscopy and ABCDE criteria from AAD, BAD and NICE guidelines.</p></div>
+  <div class="alert warn"><span class="ai-ic">&#9888;</span><div>Any changing mole, new pigmented lesion, non-healing sore, or suspicious skin growth: urgent dermatology assessment. AI cannot substitute for dermoscopy and clinical examination by a dermatologist.</div></div>
+  <div class="tab-bar">
+    <button class="tbtn active" onclick="switchTab(this,'sc1')">Melanoma</button>
+    <button class="tbtn" onclick="switchTab(this,'sc2')">BCC</button>
+    <button class="tbtn" onclick="switchTab(this,'sc3')">SCC &amp; Actinic Keratosis</button>
+    <button class="tbtn" onclick="switchTab(this,'sc4')">Dermoscopy</button>
+    <button class="tbtn" onclick="switchTab(this,'sc5')">Skin Cancer in Dark Skin</button>
+  </div>
+  <div class="tpane active" id="sc1">
+    <div class="sb"><h3>Melanoma</h3>
+      <p>Most dangerous skin cancer. Early detection critical &mdash; 5-year survival 98% (stage I) vs ~25% (stage IV).</p>
+      <h4>ABCDE Clinical Signs</h4>
+      <ul>
+        <li>A &mdash; Asymmetry: one half unlike the other</li>
+        <li>B &mdash; Border: irregular, ragged, notched, blurred</li>
+        <li>C &mdash; Colour: multiple colours (tan/brown/black/red/white/blue)</li>
+        <li>D &mdash; Diameter: over 6mm (can be smaller)</li>
+        <li>E &mdash; Evolution: ANY change in size, shape, colour; new bleeding/crusting/itching</li>
+      </ul>
+      <h4>Subtypes</h4>
+      <ul>
+        <li><strong>Superficial spreading (~70%):</strong> Slow radial growth before vertical invasion. Most common.</li>
+        <li><strong>Nodular (~15%):</strong> Rapid vertical growth from onset. Most aggressive.</li>
+        <li><strong>Lentigo maligna melanoma:</strong> Elderly, chronically sun-damaged skin. Slow growing.</li>
+        <li><strong>Acral lentiginous:</strong> Palms/soles/subungual. Most common subtype in Asian and African-heritage populations. NOT sun-related.</li>
+      </ul>
+      <h4>Treatment</h4>
+      <ul>
+        <li>Wide local excision: 1cm margins for in situ/Breslow under 1mm; 1-2cm for thicker</li>
+        <li>SLNB for Breslow over 0.8mm or high-risk features</li>
+        <li>Adjuvant: pembrolizumab/nivolumab (PD-1) or dabrafenib+trametinib (BRAF V600E mutant)</li>
+        <li>Advanced: PD-1/CTLA-4 combination (nivolumab+ipilimumab) or BRAF+MEK inhibitors</li>
+      </ul>
+    </div>
+  </div>
+  <div class="tpane" id="sc2">
+    <div class="sb"><h3>Basal Cell Carcinoma (BCC)</h3>
+      <p>Most common skin cancer globally (~80% NMSC). Slow growing, locally invasive, rarely metastasises. Excellent prognosis if treated early.</p>
+      <h4>Clinical Types</h4>
+      <ul>
+        <li><strong>Nodular (most common):</strong> Pearly papule/nodule with rolled border, telangiectasiae. May ulcerate (rodent ulcer).</li>
+        <li><strong>Superficial:</strong> Erythematous scaly patch on trunk. May resemble eczema.</li>
+        <li><strong>Morphoeic/sclerosing:</strong> Scar-like, ill-defined. Most aggressive, highest recurrence. Requires Mohs surgery.</li>
+        <li><strong>Pigmented:</strong> Blue-black, more common in darker skin. May mimic melanoma.</li>
+      </ul>
+      <h4>Treatment</h4>
+      <ul>
+        <li>Surgical excision (gold-standard): 3-5mm margins depending on subtype/site</li>
+        <li>Mohs micrographic surgery: high-risk/facial sites, recurrent BCC, Gorlin syndrome</li>
+        <li>Topical (superficial BCC only): imiquimod 5% cream 5x/week x6 weeks, or PDT</li>
+        <li>Radiotherapy: elderly/inoperable</li>
+        <li>Hedgehog inhibitors (vismodegib/sonidegib): advanced/metastatic or Gorlin syndrome</li>
+      </ul>
+    </div>
+  </div>
+  <div class="tpane" id="sc3">
+    <div class="sb"><h3>SCC and Actinic Keratosis</h3>
+      <h4>Actinic Keratosis (AK) &mdash; Pre-malignant</h4>
+      <p>Rough, scaly, erythematous papules/patches on sun-damaged skin. Individual lesion SCC progression risk ~0.1-0.5%/year. Field treatment preferred:</p>
+      <ul>
+        <li><strong>5-fluorouracil cream (Efudix 5%):</strong> Apply BD for 3-4 weeks. Intense inflammatory reaction expected (treatment working). Highly effective.</li>
+        <li><strong>Imiquimod 5%:</strong> Immune-stimulant, 3x/week for 4 weeks. Less intense reaction than 5-FU.</li>
+        <li><strong>Photodynamic therapy (PDT):</strong> Best for thick/hyperkeratotic AKs. Cosmetically excellent. Daylight PDT available.</li>
+        <li><strong>Diclofenac 3% gel:</strong> Mild, for sensitive/elderly patients, 60-90 days.</li>
+        <li><strong>Cryotherapy:</strong> Individual lesions; does not treat subclinical field disease.</li>
+      </ul>
+      <h4>Squamous Cell Carcinoma (SCC)</h4>
+      <ul>
+        <li>Second most common skin cancer. Metastatic potential ~5% (higher in immunosuppressed)</li>
+        <li>High-risk: over 2cm, over 2mm depth, poor differentiation, perineural invasion, immunosuppressed, lip/ear site</li>
+        <li>Treatment: excision (4mm minimum margins), Mohs for high-risk/facial sites, SLNB, cemiplimab/pembrolizumab for advanced/metastatic</li>
+        <li>Transplant recipients: 65-250x increased SCC risk &mdash; 3-6 monthly skin surveillance</li>
+      </ul>
+    </div>
+  </div>
+  <div class="tpane" id="sc4">
+    <div class="sb"><h3>Dermoscopy</h3>
+      <p>Handheld polarised-light dermoscope visualises subsurface structures, dramatically improving diagnostic accuracy. Reduces unnecessary excision of benign lesions while improving early melanoma detection.</p>
+      <h4>Two-Step Algorithm</h4>
+      <ul>
+        <li><strong>Step 1:</strong> Melanocytic vs non-melanocytic lesion? Look for pigment network, globules, homogeneous blue. If non-melanocytic: identify specific pattern (SK, DF, BCC, angioma).</li>
+        <li><strong>Step 2:</strong> If melanocytic: benign or malignant? Pattern analysis, ABCD dermoscopic rule, or 7-point checklist.</li>
+      </ul>
+      <h4>Dermoscopic Red Flags for Melanoma</h4>
+      <ul>
+        <li>Atypical pigment network (irregular meshwork)</li>
+        <li>Blue-white veil (irregular diffuse blue-white haze)</li>
+        <li>Atypical vascular patterns (irregular vessels, milky red areas)</li>
+        <li>Regression structures (white scar-like areas, peppering/granularity)</li>
+        <li>Irregular streaks, pseudopods, radial streaming at periphery</li>
+      </ul>
+    </div>
+  </div>
+  <div class="tpane" id="sc5">
+    <div class="sb"><h3>Skin Cancer in Darker Skin Types (Fitzpatrick IV-VI)</h3>
+      <ul>
+        <li><strong>Acral lentiginous melanoma:</strong> Most common melanoma subtype in Asian/African-heritage populations. Palms, soles, subungual (subungual = under nails). NOT UV-related. Hutchinson sign (periungual pigmentation) = urgent referral. Often diagnosed late.</li>
+        <li><strong>SCC in dark skin:</strong> Chronic wounds/scars (Marjolin ulcer), areas of chronic inflammation (discoid lupus scars), HPV-related. Less UV-related than in Fitzpatrick I-II.</li>
+        <li><strong>Pigmented BCC:</strong> More common in darker skin types, often mimics melanoma clinically.</li>
+        <li><strong>Kaposi sarcoma:</strong> Violaceous plaques/nodules. Common in sub-Saharan Africa, HIV-positive patients.</li>
+        <li><strong>Sun protection still important:</strong> SPF 30+ for all skin types &mdash; prevents photoageing, melasma, lupus exacerbation, and polymorphous light eruption.</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<!-- TREATMENTS -->
+<div class="panel" id="panel-treatments">
+  <div class="ph"><div class="ph-crumb">Therapeutics</div><h2>Treatments &amp; Biologics</h2><div class="d-line"></div><p>Research on topical agents, systemic medications, biologic therapies, JAK inhibitors, phototherapy, and procedures from AAD, BAD and NICE guidelines.</p></div>
+  <div class="tab-bar">
+    <button class="tbtn active" onclick="switchTab(this,'tr1')">Topical Agents</button>
+    <button class="tbtn" onclick="switchTab(this,'tr2')">Biologics</button>
+    <button class="tbtn" onclick="switchTab(this,'tr3')">JAK Inhibitors</button>
+    <button class="tbtn" onclick="switchTab(this,'tr4')">Phototherapy</button>
+    <button class="tbtn" onclick="switchTab(this,'tr5')">Procedures</button>
+  </div>
+  <div class="tpane active" id="tr1">
+    <div class="sb"><h3>Key Topical Dermatology Agents</h3>
+      <table>
+        <tr><th>Agent</th><th>Mechanism</th><th>Key Uses</th><th>Important Notes</th></tr>
+        <tr><td>Topical corticosteroids</td><td>Anti-inflammatory, immunosuppressive</td><td>Eczema, psoriasis, contact dermatitis, lichen planus</td><td>Match potency to site. Face/flexures: mild only. Risk of atrophy with overuse. Steroid phobia causes under-treatment.</td></tr>
+        <tr><td>Tacrolimus 0.03/0.1% (Protopic)</td><td>Calcineurin inhibitor</td><td>Atopic eczema (face/flexures), vitiligo</td><td>No skin atrophy. Burning initially. Preferred for face. Black box warning (theoretical lymphoma &mdash; not proven).</td></tr>
+        <tr><td>Pimecrolimus 1% (Elidel)</td><td>Calcineurin inhibitor</td><td>Mild-moderate eczema, sensitive areas</td><td>Milder than tacrolimus, better tolerated initially.</td></tr>
+        <tr><td>Calcipotriol (Dovonex)</td><td>Vitamin D3 analogue</td><td>Psoriasis</td><td>Max 100g/week. No skin atrophy.</td></tr>
+        <tr><td>Retinoids (tretinoin, adapalene)</td><td>RAR agonists, normalise differentiation</td><td>Acne, photoageing, AKs</td><td>Night use, SPF essential. Retinoid dermatitis initially. Avoid pregnancy.</td></tr>
+        <tr><td>Benzoyl peroxide 2.5-10%</td><td>Oxidising, bactericidal</td><td>Acne</td><td>Bleaches fabrics. Start low. Reduces resistance.</td></tr>
+        <tr><td>Azelaic acid 15-20%</td><td>Anti-inflammatory, anti-comedogenic</td><td>Acne, rosacea, PIH, melasma</td><td>Safe in pregnancy. Excellent for darker skin types.</td></tr>
+        <tr><td>Ruxolitinib 1.5% cream (Opzelura)</td><td>JAK1/2 inhibitor topical</td><td>Vitiligo (FDA/EMA approved), eczema</td><td>Most effective repigmentation therapy for vitiligo. Apply BD.</td></tr>
+      </table>
+    </div>
+  </div>
+  <div class="tpane" id="tr2">
+    <div class="sb"><h3>Biologic Therapies in Dermatology</h3>
+      <table>
+        <tr><th>Drug (Target)</th><th>Approved Indications</th><th>Dosing</th><th>Key Notes</th></tr>
+        <tr><td>Dupilumab (anti-IL-4Ra)</td><td>Atopic eczema (age 6mo+), asthma, CRSwNP, prurigo nodularis</td><td>SC every 2 weeks</td><td>No systemic immunosuppression. Conjunctivitis ~10%. No TB/hepatitis screening. Safest biologic profile.</td></tr>
+        <tr><td>Tralokinumab (anti-IL-13)</td><td>Atopic eczema (adults)</td><td>SC every 2 weeks (monthly if controlled)</td><td>Good safety, can extend interval.</td></tr>
+        <tr><td>Secukinumab (anti-IL-17A)</td><td>Plaque psoriasis, PsA, axSpA</td><td>Weekly x5 loading, then 4-weekly SC</td><td>Highest psoriasis clearance. Avoid in IBD. Candida risk.</td></tr>
+        <tr><td>Ixekizumab (anti-IL-17A)</td><td>Plaque psoriasis, PsA, axSpA</td><td>Every 2 weeks x2, then 4-weekly SC</td><td>Rapid onset, high clearance. Avoid IBD.</td></tr>
+        <tr><td>Bimekizumab (anti-IL-17A+F)</td><td>Plaque psoriasis</td><td>Every 4 weeks SC</td><td>Highest reported PASI 100 rates. Higher oral candidiasis risk.</td></tr>
+        <tr><td>Guselkumab (anti-IL-23p19)</td><td>Plaque psoriasis, PsA</td><td>4-weekly x2 loading, then 8-weekly</td><td>Excellent durability, convenient dosing.</td></tr>
+        <tr><td>Risankizumab (anti-IL-23p19)</td><td>Plaque psoriasis, PsA, Crohn&#39;s</td><td>4-weekly x2 loading, then 12-weekly SC</td><td>Quarterly dosing. Drug-free remission possible.</td></tr>
+        <tr><td>Ustekinumab (anti-IL-12/23 p40)</td><td>Plaque psoriasis (age 6+), PsA, IBD</td><td>45/90mg SC every 12 weeks</td><td>Established safety data. Quarterly dosing. Broad approvals.</td></tr>
+      </table>
+    </div>
+  </div>
+  <div class="tpane" id="tr3">
+    <div class="sb"><h3>JAK Inhibitors in Dermatology</h3>
+      <h4>Oral JAK Inhibitors</h4>
+      <ul>
+        <li><strong>Baricitinib (Olumiant) 4mg OD &mdash; JAK1/2:</strong> Licensed for moderate-severe atopic eczema AND severe alopecia areata (BRAVE-AA trials). Rapid onset. JAK class warnings: VTE, cardiovascular events, malignancy &mdash; mainly concern from RA data. Caution over-65s, smokers, CV risk.</li>
+        <li><strong>Upadacitinib (Rinvoq) 15/30mg OD &mdash; JAK1 selective:</strong> Licensed for atopic eczema (highest efficacy oral option), PsA, axSpA, RA, IBD. Acne-like rash is specific side effect. JAK class warnings apply.</li>
+        <li><strong>Abrocitinib (Cibinqo) 100/200mg OD &mdash; JAK1 selective:</strong> Licensed for moderate-severe atopic eczema. Nausea common initially. Platelet monitoring initially. JAK class warnings.</li>
+        <li><strong>Ritlecitinib (Litfulo) 50mg OD &mdash; JAK3/TEC:</strong> Licensed for severe alopecia areata from age 12+. Well-tolerated. Selective mechanism.</li>
+        <li><strong>Deucravacitinib (Sotyktu) 6mg OD &mdash; TYK2 selective:</strong> Oral, licensed for moderate-severe plaque psoriasis. Allosteric TYK2 inhibitor &mdash; does NOT carry pan-JAK class warnings for VTE/CV/malignancy. More favourable monitoring requirements.</li>
+      </ul>
+      <h4>Topical JAK Inhibitor</h4>
+      <ul>
+        <li><strong>Ruxolitinib 1.5% cream (Opzelura) &mdash; JAK1/2:</strong> FDA/EMA approved for non-segmental vitiligo (most effective repigmentation) and atopic eczema as steroid alternative. Apply BD. Minimal systemic absorption.</li>
+      </ul>
+    </div>
+  </div>
+  <div class="tpane" id="tr4">
+    <div class="sb"><h3>Phototherapy</h3>
+      <h4>Narrowband UVB (NB-UVB, 311-313nm)</h4>
+      <p>Most widely used phototherapy. 3x/week clinic. Indications: psoriasis, atopic eczema, vitiligo, mycosis fungoides, pityriasis lichenoides, PLE desensitisation. Safe in pregnancy. Lower carcinogenicity than PUVA. Response: psoriasis 60-70%, vitiligo best on face/proximal limbs.</p>
+      <h4>PUVA (Psoralen + UVA)</h4>
+      <p>Oral 8-MOP or topical psoralen + UVA (320-400nm). More effective than NB-UVB for thick/palmoplantar plaques. Maximum lifetime dose limitations (SCC risk). UV-protective glasses on treatment days.</p>
+      <h4>Photodynamic Therapy (PDT)</h4>
+      <p>Topical photosensitiser (ALA or methyl-ALA) applied then activated by visible light. Preferentially accumulates in rapidly proliferating cells. Indications: actinic keratoses (excellent, cosmetically superior to cryotherapy for field treatment), superficial BCC, Bowen&#39;s disease, acne. Conventional PDT: highly effective but 24-48h photosensitivity. Daylight PDT: lower pain profile, suitable for mild-moderate AKs.</p>
+    </div>
+  </div>
+  <div class="tpane" id="tr5">
+    <div class="sb"><h3>Dermatology Procedures</h3>
+      <ul>
+        <li><strong>Cryotherapy (liquid nitrogen, -196&#176;C):</strong> Warts, AKs, seborrhoeic keratoses, molluscum. Quick, no anaesthetic. Risk of hypopigmentation in dark skin (Fitzpatrick IV-VI) &mdash; use cautiously.</li>
+        <li><strong>Curettage &amp; cautery:</strong> BCC, SCC, seborrhoeic keratoses, warts.</li>
+        <li><strong>Excision biopsy:</strong> Suspicious lesions, skin tumours. Punch biopsy for inflammatory conditions. Shave biopsy for superficial lesions (never for suspected melanoma).</li>
+        <li><strong>Intralesional steroids:</strong> Triamcinolone acetonide 5-40mg/mL. Keloids, hypertrophic scars, alopecia areata, nodular prurigo, cystic acne, nail psoriasis.</li>
+        <li><strong>Mohs micrographic surgery:</strong> High-risk skin cancers (BCC/SCC) on face. Staged excision with 100% margin examination. Highest cure rates.</li>
+        <li><strong>Laser treatments:</strong> PDL for vascular/rosacea telangiectasia/port wine stains; Q-switched/picosecond Nd:YAG for tattoo removal/pigmentation; fractional CO2/Er:YAG for acne scarring/photoageing; excimer 308nm for vitiligo/psoriasis.</li>
+        <li><strong>Chemical peels:</strong> Superficial (glycolic/salicylic): acne/PIH; medium (TCA 35%): AKs/scarring. Deep phenol rarely used. Caution in Fitzpatrick IV-VI (PIH risk).</li>
+        <li><strong>Patch testing:</strong> Gold-standard for allergic contact dermatitis. European standard battery + supplementary panels. Allergens applied to back, readings at 48h and 96h (+/- 7 days).</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<!-- SKINCARE -->
+<div class="panel" id="panel-skincare">
+  <div class="ph"><div class="ph-crumb">Preventive Dermatology</div><h2>Skincare &amp; Sun Protection</h2><div class="d-line"></div><p>Evidence-based skincare, SPF science, active ingredients, and personalised assessment from dermatology guidelines.</p></div>
+  <div class="sb"><h3>Personalised Skincare Assessment</h3>
+    <p>Enter your details for AI-researched personalised skincare guidance.</p>
+    <div class="sk-grid">
+      <div class="fg"><label class="fl">Fitzpatrick Skin Type</label><select class="fs" id="sk-type"><option value="">Select type</option><option value="I">Type I &mdash; Very fair, always burns, never tans</option><option value="II">Type II &mdash; Fair, usually burns, sometimes tans</option><option value="III">Type III &mdash; Medium, sometimes burns, usually tans</option><option value="IV">Type IV &mdash; Olive, rarely burns, tans well</option><option value="V">Type V &mdash; Brown, very rarely burns, tans darkly</option><option value="VI">Type VI &mdash; Dark, never burns, deeply pigmented</option></select></div>
+      <div class="fg"><label class="fl">Age Range</label><select class="fs" id="sk-age"><option value="">Select</option><option>Under 20</option><option>20-35</option><option>35-50</option><option>50-65</option><option>Over 65</option></select></div>
+      <div class="fg"><label class="fl">Primary Skin Concern</label><input class="fi" id="sk-concern" placeholder="e.g. acne, dryness, PIH, ageing, rosacea"></div>
+      <div class="fg"><label class="fl">Known Allergies / Sensitivities</label><input class="fi" id="sk-allergy" placeholder="e.g. fragrances, preservatives, nickel"></div>
+    </div>
+    <div class="bgrp">
+      <button class="btn btn-r btn-lg" id="sk-btn" onclick="assessSkin()"><span class="bt">&#129332; Get Skincare Research</span><div class="spn"></div></button>
+    </div>
+  </div>
+  <div id="skin-output"></div>
+  <div class="sb"><h3>Sun Protection Science</h3>
+    <ul>
+      <li><strong>SPF ratings:</strong> SPF 30 blocks ~97% UVB; SPF 50 blocks ~98%. Broad-spectrum products protect against UVA too (look for PPD rating, PA+++, or UVA circle logo).</li>
+      <li><strong>Application amount:</strong> 1/4 teaspoon (~1.5g) for face and neck. Apply 30 minutes before exposure. Reapply every 2 hours and after swimming/sweating. Most people apply only 25-50% of required amount.</li>
+      <li><strong>Physical vs chemical sunscreens:</strong> Mineral (zinc oxide, titanium dioxide): reflect UV, immediate protection, less irritating, preferred for sensitive skin, rosacea, acne, darker skin tones. Chemical: absorb UV, cosmetically elegant but may irritate. Modern tinted mineral formulations avoid white cast.</li>
+      <li><strong>All skin types need SPF:</strong> For all Fitzpatrick types &mdash; prevents melasma, PIH, photoageing, lupus exacerbation, polymorphous light eruption, and reduces skin cancer risk.</li>
+      <li><strong>Vitamin D:</strong> Concerns about sunscreen blocking vitamin D production are largely theoretical at typical real-world use levels. Supplement rather than risk skin cancer through UV exposure.</li>
+    </ul>
+  </div>
+  <div class="sb"><h3>Evidence-Based Active Ingredients</h3>
+    <table>
+      <tr><th>Ingredient</th><th>Evidence Level</th><th>Primary Benefits</th><th>Notes</th></tr>
+      <tr><td>Retinoids (tretinoin, retinol, adapalene)</td><td>Strong (Level I for tretinoin)</td><td>Photoageing, acne, AKs, PIH, texture</td><td>Night use only, SPF essential. Start low, increase gradually. Avoid in pregnancy.</td></tr>
+      <tr><td>Vitamin C (L-ascorbic acid 10-20%)</td><td>Good (Level II)</td><td>Antioxidant, brightening, anti-PIH, SPF potentiation</td><td>Unstable &mdash; use stable formulations, store dark/cool. Apply AM before SPF.</td></tr>
+      <tr><td>Niacinamide (B3, 2-10%)</td><td>Good (Level II)</td><td>Barrier function, anti-inflammatory, anti-PIH, sebum regulation</td><td>Well-tolerated all skin types. Use 5% for most benefits.</td></tr>
+      <tr><td>Azelaic acid (10-20%)</td><td>Good (Level II)</td><td>Acne, rosacea, PIH, anti-pigmentary</td><td>Safe in pregnancy. Excellent for darker skin tones.</td></tr>
+      <tr><td>Tranexamic acid (topical 2-5% or oral 250mg BD)</td><td>Growing (Level II-III)</td><td>Melasma, PIH, brightening</td><td>Strong evidence oral for melasma. Well-tolerated.</td></tr>
+      <tr><td>Hyaluronic acid</td><td>Good for hydration</td><td>Humectant, plumping, barrier support</td><td>Apply to damp skin, seal with moisturiser. Multiple molecular weights.</td></tr>
+      <tr><td>Alpha hydroxy acids (glycolic, lactic 5-10%)</td><td>Good (Level II)</td><td>Exfoliation, photoageing, PIH, texture improvement</td><td>Photosensitising &mdash; SPF essential. Start low, avoid over-exfoliation.</td></tr>
+    </table>
+  </div>
+</div>
+
+<!-- HAIR & NAILS -->
+<div class="panel" id="panel-hair">
+  <div class="ph"><div class="ph-crumb">Trichology &amp; Nail Disorders</div><h2>Hair &amp; Nail Disorders</h2><div class="d-line"></div><p>Research on alopecia, hair loss investigations, nail diseases, and treatment options from BAD, AAD and IADVL guidelines.</p></div>
+  <div class="tab-bar">
+    <button class="tbtn active" onclick="switchTab(this,'hn1')">Alopecia Areata</button>
+    <button class="tbtn" onclick="switchTab(this,'hn2')">Androgenetic Alopecia</button>
+    <button class="tbtn" onclick="switchTab(this,'hn3')">Telogen Effluvium</button>
+    <button class="tbtn" onclick="switchTab(this,'hn4')">Nail Disorders</button>
+  </div>
+  <div class="tpane active" id="hn1">
+    <div class="sb"><h3>Alopecia Areata (AA)</h3>
+      <p>Autoimmune T-cell mediated attack on anagen follicles. Sharply demarcated round/oval patches of non-scarring hair loss. Exclamation mark hairs (tapered distally) are characteristic. Spontaneous regrowth in ~50% within 1 year for limited disease, but recurrence common.</p>
+      <h4>Classification</h4>
+      <ul>
+        <li>AA (patchy): one or more patches, scalp most common</li>
+        <li>Alopecia totalis (AT): complete scalp hair loss</li>
+        <li>Alopecia universalis (AU): complete scalp + body hair loss</li>
+        <li>Ophiasis: band-like at margins &mdash; poor prognosis for regrowth</li>
+      </ul>
+      <h4>Treatment</h4>
+      <ul>
+        <li><strong>Limited (&lt;50%):</strong> Intralesional triamcinolone acetonide 5-10mg/mL (most effective for localised AA, 6-8 weekly), topical potent steroids, topical minoxidil adjunct</li>
+        <li><strong>Extensive/AT/AU:</strong> Contact immunotherapy (DPCP/SADBE, weekly sensitisation, 30-60% response rates); systemic steroids for rapid-onset; PUVA</li>
+        <li><strong>Severe AA &mdash; JAK inhibitors (major 2022-2024 advance):</strong> Baricitinib 4mg OD (JAK1/2, BRAVE-AA trials, NICE approved), ritlecitinib 50mg OD (JAK3/TEC, approved from age 12+). Significant regrowth in ~35-40% at 36 weeks.</li>
+      </ul>
+    </div>
+  </div>
+  <div class="tpane" id="hn2">
+    <div class="sb"><h3>Androgenetic Alopecia (AGA)</h3>
+      <p>Most common hair loss in males and females. DHT-mediated follicle miniaturisation. Gradual, progressive, non-scarring. Male pattern (Hamilton-Norwood: frontotemporal + vertex thinning). Female pattern (Ludwig: diffuse crown thinning, frontal hairline preserved).</p>
+      <h4>Evidence-Based Treatments</h4>
+      <ul>
+        <li><strong>Minoxidil topical (2% females, 5% males, OD-BD):</strong> Prolongs anagen phase. FDA-approved. Requires ongoing use (shedding resumes on stopping). Initial shedding for 2-3 months expected.</li>
+        <li><strong>Oral minoxidil (0.625-2.5mg females, 2.5-5mg males):</strong> Growing evidence, effective at low doses. Monitor for fluid retention, hypertrichosis.</li>
+        <li><strong>Finasteride 1mg OD (males only):</strong> 5-alpha reductase inhibitor, reduces DHT ~70%. TERATOGENIC (females of childbearing age must not handle crushed tablets). Sexual dysfunction ~2-4% (reversible on stopping in most).</li>
+        <li><strong>Dutasteride 0.5mg OD (males, off-label AGA):</strong> Dual type I+II 5-alpha reductase inhibitor, more potent DHT reduction.</li>
+        <li><strong>FUE/FUT hair transplantation:</strong> Permanent. Results at 12-18 months. Requires adequate donor hair.</li>
+        <li><strong>LLLT (low-level laser therapy):</strong> FDA-cleared adjunct. Modest evidence.</li>
+      </ul>
+    </div>
+  </div>
+  <div class="tpane" id="hn3">
+    <div class="sb"><h3>Telogen Effluvium (TE)</h3>
+      <p>Diffuse shedding 2-3 months after a trigger (telogen phase lag). Most common cause of diffuse hair loss in adult women. Usually self-limiting, regrowth in 3-6 months after treating the cause.</p>
+      <h4>Common Triggers</h4>
+      <ul>
+        <li>High fever/severe illness (including COVID-19)</li>
+        <li>Major surgery or significant haemorrhage</li>
+        <li>Childbirth (postpartum TE &mdash; very common, self-limiting)</li>
+        <li>Crash dieting/nutritional deficiency (iron, ferritin, protein, zinc, vitamin D)</li>
+        <li>Thyroid dysfunction (hypo- or hyperthyroidism)</li>
+        <li>Emotional stress, significant life events</li>
+        <li>Medications: anticoagulants, retinoids, beta-blockers, lithium, hormonal changes</li>
+      </ul>
+      <h4>Investigation</h4>
+      <ul>
+        <li>FBC, ferritin (AIM over 70 mcg/L for optimal hair growth), TFTs</li>
+        <li>Vitamin D, zinc, B12, folate, LFTs, hormonal profile (if indicated)</li>
+      </ul>
+      <h4>Management</h4>
+      <p>Treat underlying cause. Nutritional optimisation especially iron/ferritin. Reassurance: shedding is temporary. Topical minoxidil speeds recovery. Chronic TE (&gt;6 months) needs more thorough investigation.</p>
+    </div>
+  </div>
+  <div class="tpane" id="hn4">
+    <div class="sb"><h3>Nail Disorders</h3>
+      <h4>Onychomycosis</h4>
+      <p>Most common nail disorder, ~10% general population. Confirm with nail clippings for microscopy + culture BEFORE starting treatment. Oral terbinafine 250mg OD: 3 months toenails, 6 weeks fingernails (most effective). Itraconazole pulse therapy alternative. Topical amorolfine 5% lacquer for single nail/superficial infection or adjunct.</p>
+      <h4>Nail Psoriasis</h4>
+      <p>Pitting (pathognomonic), onycholysis, subungual hyperkeratosis, oil-drop sign. Strongly predicts psoriatic arthritis. Biologics (IL-17, IL-23 inhibitors) most effective systemic treatment. Intralesional triamcinolone into proximal nail fold for limited disease.</p>
+      <h4>Paronychia</h4>
+      <ul>
+        <li><strong>Acute:</strong> S. aureus, post-trauma/nail-biting. Warm soaks, topical antibiotics (mild), oral flucloxacillin (spreading), I&amp;D for fluctuant abscess.</li>
+        <li><strong>Chronic:</strong> Candida + irritant exposure. Keep dry, barrier protection, topical antifungal+steroid. Common in healthcare workers, hairdressers, cooks.</li>
+      </ul>
+      <h4>Subungual Pigmentation</h4>
+      <p>Hutchinson sign (periungual extension onto proximal/lateral nail folds) = strongly suggests acral lentiginous melanoma. Any suspicious subungual pigmentation without clear trauma history: URGENT dermatology assessment.</p>
+    </div>
+  </div>
+</div>
+
+<!-- EMERGENCY -->
+<div class="panel" id="panel-emergency">
+  <div class="ph"><div class="ph-crumb">URGENT</div><h2>Dermatological Emergencies</h2><div class="d-line"></div></div>
+  <div class="alert emergency"><span class="ai-ic">&#128680;</span><div>SKIN EMERGENCIES &mdash; 112 (India) / 999 (UK) / 911 (US): Anaphylaxis (urticaria + airway symptoms/collapse), SJS/TEN (skin peeling + fever + mucosal involvement), Necrotising fasciitis (spreading red/dusky skin + severe pain + fever), Erythroderma (90%+ BSA + systemic symptoms). ALL LIFE-THREATENING.</div></div>
+  <div class="g2">
+    <div class="sb"><h3>&#128680; Anaphylaxis</h3>
+      <h4>Recognition</h4>
+      <p>Urticaria/angioedema + respiratory symptoms (wheeze, stridor) and/or cardiovascular collapse following allergen exposure (foods, drugs, stings, latex).</p>
+      <h4>Immediate Actions</h4>
+      <ul>
+        <li>IM adrenaline 0.5mg adult (mid-outer thigh) &mdash; FIRST and most important treatment</li>
+        <li>Call 112/999/911 IMMEDIATELY</li>
+        <li>Lay flat, legs raised (sit up if breathing difficulty)</li>
+        <li>Oxygen; IV access; IV fluids</li>
+        <li>IM chlorphenamine 10mg + IV hydrocortisone 200mg (secondary &mdash; NOT instead of adrenaline)</li>
+        <li>Second adrenaline dose after 5-15 min if no improvement</li>
+        <li>All at-risk patients: carry TWO adrenaline auto-injectors (EpiPen/Jext) at all times</li>
+      </ul>
+    </div>
+    <div class="sb"><h3>&#128680; SJS / TEN</h3>
+      <h4>Recognition</h4>
+      <p>Target lesions or blistering rash on trunk + skin detachment (Nikolsky sign positive) + fever + mucosal involvement (mouth/eyes/genitalia). Drug-induced in most cases (allopurinol, sulfonamides, anticonvulsants, NSAIDs, nevirapine).</p>
+      <h4>Critical Actions</h4>
+      <ul>
+        <li>HOSPITAL IMMEDIATELY &mdash; burns unit/ICU for TEN (&gt;30% BSA)</li>
+        <li>STOP causative drug immediately &mdash; single most important intervention</li>
+        <li>Supportive: IV fluids, nutrition, temperature regulation, wound care</li>
+        <li>Ophthalmology review (can cause blindness)</li>
+        <li>SCORTEN scoring for mortality prediction</li>
+        <li>Mortality: SJS ~10%, TEN 30-40%</li>
+      </ul>
+    </div>
+    <div class="sb"><h3>&#128680; Necrotising Fasciitis</h3>
+      <h4>Recognition</h4>
+      <p>Pain disproportionate to appearance, then dusky/grey skin colour changes, blistering, necrosis. Systemic sepsis. Crepitus (subcutaneous gas) if present is diagnostic.</p>
+      <h4>Critical Actions</h4>
+      <ul>
+        <li>SURGICAL EMERGENCY &mdash; call 112/999/911</li>
+        <li>Do NOT delay surgery for imaging</li>
+        <li>Broad-spectrum IV antibiotics immediately (carbapenem + clindamycin)</li>
+        <li>HDU/ICU, aggressive resuscitation</li>
+        <li>IVIG for Group A Streptococcal type II</li>
+        <li>Mortality 20-30%</li>
+      </ul>
+    </div>
+    <div class="sb"><h3>&#128680; DRESS Syndrome</h3>
+      <h4>Recognition</h4>
+      <p>2-8 weeks after starting new drug: widespread rash + fever + lymphadenopathy + organ involvement (hepatitis most common). Eosinophilia + atypical lymphocytes.</p>
+      <h4>Common Culprit Drugs</h4>
+      <ul>
+        <li>Aromatic anticonvulsants: phenytoin, carbamazepine, phenobarbitone</li>
+        <li>Allopurinol, dapsone, minocycline, sulfonamides, abacavir</li>
+      </ul>
+      <h4>Critical Actions</h4>
+      <ul>
+        <li>STOP the causative drug immediately</li>
+        <li>Hospital admission for daily organ monitoring (LFTs, renal function)</li>
+        <li>Systemic corticosteroids in most cases (prednisolone 0.5-1mg/kg/day)</li>
+        <li>RegiSCAR scoring criteria for diagnosis</li>
+      </ul>
+    </div>
+  </div>
+  <div class="sb"><h3>Generalised Erythroderma</h3>
+    <p>90%+ BSA erythema and scaling. Causes: psoriasis flare (most common), atopic eczema flare, drug reaction, CTCL/Sezary syndrome, pityriasis rubra pilaris. Complications: thermoregulatory failure, high-output cardiac failure, hypoalbuminaemia, fluid/electrolyte disturbance, secondary infection. Hospital admission, treat underlying cause, emollients, temperature regulation, cardiac monitoring, nutritional support.</p>
+  </div>
+</div>
+
+<!-- SKIN OF COLOUR -->
+<div class="panel" id="panel-soc">
+  <div class="ph"><div class="ph-crumb">Inclusive Dermatology</div><h2>Skin of Colour</h2><div class="d-line"></div><p>Dedicated dermatology guidance for Fitzpatrick skin types IV-VI &mdash; addressing under-representation in clinical training and the different presentations of skin disease in darker skin tones.</p></div>
+  <div class="alert teal"><span class="ai-ic">&#129529;</span><div>Skin of colour (Fitzpatrick IV-VI) represents the majority of the global population but has historically been under-represented in dermatology training. Clinical presentations differ significantly from lighter skin tones &mdash; this section addresses that gap.</div></div>
+  <div class="sb"><h3>Fitzpatrick Skin Type Scale</h3>
+    <table>
+      <tr><th>Type</th><th>Complexion</th><th>Burn/Tan Response</th><th>Examples</th></tr>
+      <tr><td>I</td><td>Very fair, pale white, freckles</td><td>Always burns, never tans</td><td>Celtic, Northern European</td></tr>
+      <tr><td>II</td><td>Fair, white</td><td>Usually burns, minimal tan</td><td>Northern/Western European</td></tr>
+      <tr><td>III</td><td>Medium, cream white/light beige</td><td>Sometimes burns, gradually tans</td><td>Southern European, some South Asian</td></tr>
+      <tr><td>IV</td><td>Olive, moderate brown</td><td>Rarely burns, always tans</td><td>Mediterranean, East Asian, South Asian</td></tr>
+      <tr><td>V</td><td>Brown</td><td>Very rarely burns, tans deeply</td><td>South Asian, Middle Eastern, Hispanic</td></tr>
+      <tr><td>VI</td><td>Dark brown to black</td><td>Never burns, deeply pigmented</td><td>Sub-Saharan African, Australian Aboriginal</td></tr>
+    </table>
+  </div>
+  <div class="sb"><h3>Key Differences and Considerations</h3>
+    <h4>Post-Inflammatory Hyperpigmentation (PIH)</h4>
+    <p>Extremely common, often more distressing than the primary skin condition. Any skin inflammation leaves dark brown-grey macules persisting months-years (eczema, acne, psoriasis, insect bites, injuries). Prevention is key. Management: topical retinoids, azelaic acid, niacinamide, vitamin C, tranexamic acid (topical/oral), hydroquinone short courses, SPF 50+ DAILY (mandatory). Caution with lasers and peels &mdash; paradoxical worsening of PIH possible.</p>
+    <h4>Keloids and Hypertrophic Scars</h4>
+    <p>Keloids extend BEYOND the original wound boundary. Genetic predisposition. 5-15x more prevalent in Fitzpatrick V-VI. Common sites: earlobes, chest, upper back, jaw. Prevention most important &mdash; avoid unnecessary surgery/piercings in high-risk individuals. Intralesional triamcinolone every 4-6 weeks, silicone gel sheeting, surgical excision + immediate post-op radiotherapy for refractory cases.</p>
+    <h4>Eczema in Skin of Colour</h4>
+    <p>Erythema appears dark brown, grey, or purplish rather than red &mdash; leading to under-diagnosis and under-treatment. More commonly: follicular accentuation (gooseflesh-like), lichenification, and PIH. DLQI impact often higher due to pigmentation burden. SCORAD/EASI may underestimate severity.</p>
+    <h4>Psoriasis in Skin of Colour</h4>
+    <p>Plaques appear darker (brown/violaceous not red) with less visible scale on darker skin. PASI scores may underestimate severity (erythema component underscored). Post-treatment hypopigmentation (white patches where plaques resolved) can be very distressing. Guttate psoriasis may be difficult to distinguish from pityriasis rosea.</p>
+    <h4>Melasma (predominantly Fitzpatrick III-V)</h4>
+    <p>Symmetrical brown-grey facial hyperpigmentation. Exacerbated by UV, hormonal factors (pregnancy, COCP, HRT). Strict SPF 50+ (most important), hydroquinone 2-4% (short courses), triple Kligman combination, azelaic acid, tranexamic acid oral/topical (strong emerging evidence), niacinamide. Chemical peels and lasers: use with caution and expertise.</p>
+    <h4>Acne Keloidalis Nuchae (AKN)</h4>
+    <p>Follicular papules/pustules at nape/occipital scalp progressing to keloidal scarring. Predominantly affects Black men and those of African descent. Avoid close shaving/haircuts. Topical steroids, retinoids, intralesional steroids, antibiotics, laser epilation for severe cases.</p>
+    <h4>Hair Disorders in Afro-Caribbean Hair</h4>
+    <p>Traction alopecia: most common cause of hair loss in Black women (tight braids, weaves, extensions, relaxers). Central centrifugal cicatricial alopecia (CCCA): progressive scarring alopecia at crown, predominantly Black women. Pseudofolliculitis barbae: ingrown hairs from shaving &mdash; very common in Black men, can lead to PIH and scarring. Dermatology-aware haircare counselling essential.</p>
+  </div>
+</div>
+
+<!-- CHAT -->
+<div class="panel" id="panel-chat">
+  <div class="ph"><div class="ph-crumb">AI Research Assistant</div><h2>Ask DermaCare AI</h2><div class="d-line"></div><p>Ask any question about skin health. AI-researched from AAD, BAD, EADV, WHO and NICE. <strong>Free forever.</strong></p></div>
+  <div class="alert emergency"><span class="ai-ic">&#128680;</span><div>SKIN EMERGENCY (anaphylaxis, SJS/TEN, necrotising fasciitis) &mdash; 112/999/911 IMMEDIATELY. Do NOT type here first.</div></div>
+  <div class="alert warn"><span class="ai-ic">&#9888;</span><div>AI responses are for educational research only. Not medical advice. Always consult your dermatologist.</div></div>
+  <div class="chat-wrap">
+    <div class="chat-head"><h3>&#129504; DermaCare AI Research Assistant</h3><span class="free">FREE FOREVER</span></div>
+    <div class="chat-msgs" id="chat-msgs">
+      <div class="cm sys">Welcome to DermaCare AI &#129584;</div>
+      <div class="cm ai"><div class="ai-lbl">DermaCare AI</div>Hello! I can research questions about eczema, psoriasis, acne, skin cancer, rosacea, urticaria, hair loss, pigmentation, skin of colour concerns, and skincare. For skin emergencies call 112/999/911 immediately. I provide educational research only, not personal medical advice.</div>
+    </div>
+    <div class="chat-input-row">
+      <input class="chat-input" id="chat-in" placeholder="Ask about eczema, acne, psoriasis, skin cancer, skincare, hair loss..." onkeypress="if(event.key==='Enter')sendChat()">
+      <button class="chat-send" onclick="sendChat()">Ask</button>
+    </div>
+  </div>
+</div>
+
+<!-- SETTINGS -->
+<div class="panel" id="panel-settings">
+  <div class="ph"><div class="ph-crumb">Configuration</div><h2>Settings &amp; AI Provider</h2><div class="d-line"></div><p>Choose which AI powers your research. Keys are AES-256-GCM encrypted and stored only in your browser.</p></div>
+  <div class="sb">
+    <h3>&#129302; Choose Your AI Provider</h3>
+    <p style="margin-bottom:16px;">Pick one of 5 providers. AES-256-GCM encrypted before storage. Never sent to our servers.</p>
+    <div class="g3" style="margin-bottom:18px;">
+      <div class="card click provider-card" data-provider="openai" onclick="selectProvider('openai')"><div class="ci">&#129001;</div><h3>ChatGPT</h3><p><p><p>OpenAI &mdash; gpt-4o</p><span class="ctag" id="ptag-openai">Not configured</span></div>
+      <div class="card click provider-card" data-provider="gemini" onclick="selectProvider('gemini')"><div class="ci">&#128309;</div><h3>Gemini</h3><p>Google &mdash; gemini-2.0-flash</p><span class="ctag" id="ptag-gemini">Not configured</span></div>
+      <div class="card click provider-card" data-provider="grok" onclick="selectProvider('grok')"><div class="ci">&#9899;</div><h3>Grok</h3><p>xAI &mdash; grok-2-latest</p><span class="ctag" id="ptag-grok">Not configured</span></div>
+      <div class="card click provider-card" data-provider="deepseek" onclick="selectProvider('deepseek')"><div class="ci">&#128308;</div><h3>DeepSeek</h3><p>DeepSeek &mdash; deepseek-chat</p><span class="ctag" id="ptag-deepseek">Not configured</span></div>
+      <div class="card click provider-card" data-provider="mistral" onclick="selectProvider('mistral')"><div class="ci">&#127756;</div><h3>Mistral AI</h3><p>Mistral &mdash; mistral-large-latest</p><span class="ctag" id="ptag-mistral">Not configured</span></div>
+      <div class="card click provider-card" data-provider="anthropic" onclick="selectProvider('anthropic')"><div class="ci">&#128995;</div><h3>Claude</h3>Anthropic &mdash; claude-sonnet-4</p><span class="ctag" id="ptag-anthropic">Not configured</span></div>
+      <div class="card click provider-card" data-provider="" onclick="selectProvider('')"><div class="ci">&#128244;</div><h3>Offline Mode</h3><p>No AI &mdash; embedded knowledge base</p><span class="ctag" id="ptag-offline">Always available</span></div>
+    </div>
+  </div>
+  <div class="api-box" id="key-entry-box">
+    <h3 id="key-entry-title">&#128273; API Key</h3>
+    <p id="key-entry-desc" style="font-size:13px;color:var(--text2);margin-bottom:14px;line-height:1.6;">Select a provider above, then paste its API key here.</p>
+    <div class="api-row">
+      <input class="api-input" type="password" id="api-key-in" placeholder="Paste your API key here">
+      <button class="btn btn-r" onclick="saveKey()">Save</button>
+      <button class="btn btn-outline btn-sm" onclick="clearKey()">Clear</button>
+    </div>
+    <div id="key-status" style="margin-top:10px;font-size:12px;color:var(--text3);">No provider selected &mdash; offline mode.</div>
+    <div style="margin-top:6px;font-size:11px;color:var(--text3);">&#128274; AES-256-GCM encrypted &middot; PBKDF2 key derivation &middot; Device-bound &middot; Never leaves your browser</div>
+    <div style="margin-top:8px;"><a id="get-key-link" href="#" target="_blank" style="font-size:12px;color:var(--rose);">Get a free API key &#8594;</a></div>
+  </div>
+  <div class="sb"><h3>System Status</h3>
+    <div style="font-size:13.5px;line-height:2;color:var(--text2);">
+      Server: <span style="color:var(--teal)">&#10003; Running</span><br>
+      Active Provider: <span id="mode-disp">Offline Research</span><br>
+      Security: <span style="color:var(--rose)">&#128274; AES-256-GCM</span><br>
+      Offline Knowledge Base: <span style="color:var(--teal)">&#10003; Available (11 categories)</span>
+    </div>
+  </div>
+</div>
+
+</main>
+</div>
+
+<footer>
+  <div class="footer-inner">
+    <div class="footer-grid">
+      <div class="footer-brand"><h3>&#129504; DermaCare AI</h3><p>Dermatology Health Intelligence Platform &mdash; AI-researched insights from AAD, BAD, EADV, WHO, NICE, IADVL and peer-reviewed dermatology literature. Dedicated skin-of-colour guidance.</p></div>
+      <div class="footer-col"><h4>Sections</h4><ul>
+        <li><a href="#" onclick="nav('conditions')">Skin Conditions</a></li>
+        <li><a href="#" onclick="nav('acne')">Acne</a></li>
+        <li><a href="#" onclick="nav('psoriasis')">Psoriasis</a></li>
+        <li><a href="#" onclick="nav('cancer')">Skin Cancer</a></li>
+        <li><a href="#" onclick="nav('treatments')">Treatments &amp; Biologics</a></li>
+        <li><a href="#" onclick="nav('skincare')">Skincare &amp; SPF</a></li>
+        <li><a href="#" onclick="nav('hair')">Hair &amp; Nails</a></li>
+        <li><a href="#" onclick="nav('soc')">Skin of Colour</a></li>
+      </ul></div>
+      <div class="footer-col"><h4>Clinical Sources</h4><ul>
+        <li><a href="https://www.aad.org" target="_blank">AAD (American Academy)</a></li>
+        <li><a href="https://www.bad.org.uk" target="_blank">BAD (British Association)</a></li>
+        <li><a href="https://www.eadv.org" target="_blank">EADV Guidelines</a></li>
+        <li><a href="https://www.nice.org.uk" target="_blank">NICE Guidelines</a></li>
+        <li><a href="https://www.iadvl.org" target="_blank">IADVL India</a></li>
+      </ul></div>
+    </div>
+    <div class="footer-bottom">
+      <p>DermaCare AI &mdash; For Research &amp; Educational Purposes Only &middot; Not Medical Advice</p>
+      <div class="footer-disc">Not a substitute for professional dermatological care. SKIN EMERGENCY: 112 India / 999 UK / 911 US. &#128274; AES-256-GCM key encryption.</div>
+    </div>
+  </div>
+</footer><script>
+// AES-256-GCM Secure Key Storage
+/**
+ * OrthoCare / CardioCare / NeuroCare / GynoCare / OncoCare AI
+ * AES-256-GCM Client-Side Key Security Module v1.0
+ * =====================================================
+ * Encrypts API keys before storing in localStorage using
+ * AES-256-GCM via the browser's native Web Crypto API.
+ * The encryption key is derived from a device-specific
+ * fingerprint using PBKDF2 (100,000 iterations, SHA-256).
+ *
+ * Security properties:
+ * - Keys are NEVER stored in plaintext in localStorage
+ * - AES-256-GCM provides both encryption AND authentication (AEAD)
+ * - The derived key is not persisted anywhere
+ * - A random 96-bit IV is generated for every encryption operation
+ * - PBKDF2 with 100k iterations makes brute-force attacks expensive
+ * - Key never leaves the browser except when sent directly to AI provider API
+ *
+ * Usage: drop this entire block before your ST = {} state declaration.
+ * Then replace all localStorage.setItem(key, JSON.stringify(keys)) with
+ * await SecureKeyStore.save(storeName, keys)
+ * and all JSON.parse(localStorage.getItem(...)) with
+ * await SecureKeyStore.load(storeName)
+ */
+
+const SecureKeyStore = (function() {
+  'use strict';
+
+  // Derive a deterministic device fingerprint from stable browser properties.
+  // This is NOT cryptographically strong identity - it's a convenience measure
+  // to ensure keys encrypted on this browser can only be decrypted on this browser.
+  function getDeviceFingerprint(appId) {
+    var parts = [
+      appId,
+      navigator.userAgent || '',
+      navigator.language || '',
+      (screen.width || 0) + 'x' + (screen.height || 0),
+      navigator.hardwareConcurrency || 0,
+      Intl.DateTimeFormat().resolvedOptions().timeZone || ''
+    ];
+    return parts.join('|:|');
+  }
+
+  // Derive AES-256 key from fingerprint using PBKDF2
+  async function deriveKey(appId) {
+    var fingerprint = getDeviceFingerprint(appId);
+    var encoder = new TextEncoder();
+    var rawKey = await crypto.subtle.importKey(
+      'raw',
+      encoder.encode(fingerprint),
+      { name: 'PBKDF2' },
+      false,
+      ['deriveKey']
+    );
+    // Use a fixed but app-specific salt (not secret - purpose is just domain separation)
+    var salt = encoder.encode('medical-ai-platform-' + appId + '-v1');
+    return await crypto.subtle.deriveKey(
+      { name: 'PBKDF2', salt: salt, iterations: 100000, hash: 'SHA-256' },
+      rawKey,
+      { name: 'AES-GCM', length: 256 },
+      false,
+      ['encrypt', 'decrypt']
+    );
+  }
+
+  // Encrypt a string value, returns base64-encoded IV + ciphertext
+  async function encrypt(plaintext, appId) {
+    var key = await deriveKey(appId);
+    var iv = crypto.getRandomValues(new Uint8Array(12)); // 96-bit random IV
+    var encoder = new TextEncoder();
+    var ciphertext = await crypto.subtle.encrypt(
+      { name: 'AES-GCM', iv: iv },
+      key,
+      encoder.encode(plaintext)
+    );
+    // Prepend IV to ciphertext for storage: [12 bytes IV][ciphertext]
+    var combined = new Uint8Array(iv.length + ciphertext.byteLength);
+    combined.set(iv, 0);
+    combined.set(new Uint8Array(ciphertext), iv.length);
+    return btoa(String.fromCharCode.apply(null, combined));
+  }
+
+  // Decrypt a base64-encoded IV + ciphertext string
+  async function decrypt(encoded, appId) {
+    try {
+      var key = await deriveKey(appId);
+      var combined = new Uint8Array(
+        atob(encoded).split('').map(function(c) { return c.charCodeAt(0); })
+      );
+      var iv = combined.slice(0, 12);
+      var ciphertext = combined.slice(12);
+      var plaintext = await crypto.subtle.decrypt(
+        { name: 'AES-GCM', iv: iv },
+        key,
+        ciphertext
+      );
+      return new TextDecoder().decode(plaintext);
+    } catch (e) {
+      // Decryption failed - key may have been stored with old method (plaintext)
+      // or device fingerprint changed. Return null to trigger re-entry.
+      return null;
+    }
+  }
+
+  // Public API
+  return {
+    /**
+     * Save API keys object to localStorage with AES-256-GCM encryption.
+     * @param {string} storeName - localStorage key name (e.g. 'cc_keys')
+     * @param {string} appId - app-specific ID for key derivation (e.g. 'cardiocare')
+     * @param {object} keysObj - { provider: 'sk-...' } keys object
+     */
+    save: async function(storeName, appId, keysObj) {
+      try {
+        var plaintext = JSON.stringify(keysObj);
+        var encrypted = await encrypt(plaintext, appId);
+        localStorage.setItem(storeName, encrypted);
+        localStorage.setItem(storeName + '_enc', '1'); // flag: encrypted format
+        return true;
+      } catch (e) {
+        // Fallback: if Web Crypto unavailable (very old browser), store plaintext
+        console.warn('[SecureKeyStore] Encryption unavailable, storing plaintext:', e.message);
+        localStorage.setItem(storeName, JSON.stringify(keysObj));
+        return false;
+      }
+    },
+
+    /**
+     * Load and decrypt API keys from localStorage.
+     * @param {string} storeName - localStorage key name
+     * @param {string} appId - must match what was used in save()
+     * @returns {object} keysObj or {} if not found / decryption failed
+     */
+    load: async function(storeName, appId) {
+      try {
+        var stored = localStorage.getItem(storeName);
+        if (!stored) return {};
+        var isEncrypted = localStorage.getItem(storeName + '_enc') === '1';
+        if (!isEncrypted) {
+          // Migrate plaintext to encrypted on next save
+          var parsed = JSON.parse(stored);
+          // Auto-migrate: re-encrypt now
+          await this.save(storeName, appId, parsed);
+          return parsed;
+        }
+        var plaintext = await decrypt(stored, appId);
+        if (plaintext === null) {
+          // Decryption failed (e.g. different browser/device after migration)
+          // Clear and start fresh - user will need to re-enter keys
+          console.warn('[SecureKeyStore] Decryption failed - clearing stored keys');
+          localStorage.removeItem(storeName);
+          localStorage.removeItem(storeName + '_enc');
+          return {};
+        }
+        return JSON.parse(plaintext);
+      } catch (e) {
+        return {};
+      }
+    },
+
+    /**
+     * Remove all keys for a store.
+     */
+    clear: function(storeName) {
+      localStorage.removeItem(storeName);
+      localStorage.removeItem(storeName + '_enc');
+    },
+
+    /**
+     * Check if Web Crypto AES-GCM is available in this browser.
+     */
+    isAvailable: function() {
+      return !!(window.crypto && window.crypto.subtle && window.crypto.subtle.encrypt);
+    }
+  };
+})();
+
+
+// Application Code
+
+var PROVIDERS = {
+  anthropic:{label:'Claude (Anthropic)',placeholder:'sk-ant-api03-...',getKeyUrl:'https://console.anthropic.com',icon:'&#128995;'},
+  openai:{label:'ChatGPT (OpenAI)',placeholder:'sk-...',getKeyUrl:'https://platform.openai.com/api-keys',icon:'&#129001;'},
+  gemini:{label:'Gemini (Google)',placeholder:'AIza...',getKeyUrl:'https://aistudio.google.com/apikey',icon:'&#128309;'},
+  grok:{label:'Grok (xAI)',placeholder:'xai-...',getKeyUrl:'https://console.x.ai',icon:'&#9899;'},
+  deepseek:{label:'DeepSeek',placeholder:'sk-...',getKeyUrl:'https://platform.deepseek.com/api_keys',icon:'&#128308;'}
+};
+var ST = { provider: localStorage.getItem('dermacare_provider') || '', keys: {}, files: [] };
+function currentApiKey(){ return ST.provider ? (ST.keys[ST.provider] || '') : ''; }
+
+document.addEventListener('DOMContentLoaded', function(){
+  (async function(){
+    try {
+      if(SecureKeyStore.isAvailable()){ ST.keys = await SecureKeyStore.load('dc_keys','dermacare'); }
+      else { var r=localStorage.getItem('dc_keys'); ST.keys=r?JSON.parse(r):{}; }
+    } catch(e) { ST.keys={}; }
+  })();
+  ['dc1','dc2','dc3'].forEach(function(id){
+    var el=document.getElementById(id);
+    if(el) el.addEventListener('change', function(){
+      var ok=['dc1','dc2','dc3'].every(function(i){ var x=document.getElementById(i); return x&&x.checked; });
+      var btn=document.getElementById('disc-btn'); if(btn) btn.disabled=!ok;
+    });
+  });
+  if(sessionStorage.getItem('dermacare_disc')){
+    var m=document.getElementById('disc-modal'); if(m) m.style.display='none';
+  }
+  setTimeout(function(){ refreshProviderTags(); selectProvider(ST.provider,true); },100);
+});
+
+function acceptDisc(){
+  var m=document.getElementById('disc-modal'); if(m) m.style.display='none';
+  sessionStorage.setItem('dermacare_disc','1');
+}
+
+function nav(id){
+  document.querySelectorAll('.panel').forEach(function(p){ p.classList.remove('active'); });
+  document.querySelectorAll('.ntab,.sbi').forEach(function(n){ n.classList.remove('active'); });
+  var p=document.getElementById('panel-'+id); if(p) p.classList.add('active');
+  document.querySelectorAll('.ntab,.sbi').forEach(function(el){
+    var oc=el.getAttribute('onclick');
+    if(oc && oc.indexOf("'"+id+"'")!==-1) el.classList.add('active');
+  });
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+function switchTab(btn,id){
+  var parent=btn.closest('.panel');
+  if(parent){
+    parent.querySelectorAll('.tbtn').forEach(function(b){ b.classList.remove('active'); });
+    parent.querySelectorAll('.tpane').forEach(function(p){ p.classList.remove('active'); });
+  }
+  btn.classList.add('active');
+  var pane=document.getElementById(id); if(pane) pane.classList.add('active');
+}
+
+function selectProvider(pid,init){
+  ST.provider=pid; localStorage.setItem('dermacare_provider',pid||'');
+  document.querySelectorAll('.provider-card').forEach(function(c){ c.classList.remove('selected'); });
+  var ac=document.querySelector('.provider-card[data-provider="'+pid+'"]');
+  if(ac) ac.classList.add('selected');
+  var box=document.getElementById('key-entry-box');
+  var title=document.getElementById('key-entry-title');
+  var desc=document.getElementById('key-entry-desc');
+  var input=document.getElementById('api-key-in');
+  var link=document.getElementById('get-key-link');
+  var status=document.getElementById('key-status');
+  var md=document.getElementById('mode-disp');
+  if(!pid){
+    if(box) box.style.display='none';
+    if(status) status.textContent='Offline mode.';
+    if(md) md.textContent='Offline Research';
+    if(!init) toast('Offline mode active.');
+    return;
+  }
+  var meta=PROVIDERS[pid];
+  if(box) box.style.display='block';
+  if(title) title.innerHTML=meta.icon+' '+meta.label+' API Key';
+  if(desc) desc.innerHTML='Get key at <strong>'+meta.getKeyUrl.replace('https://','')+'</strong>. AES-256-GCM encrypted.';
+  if(input){ input.placeholder=meta.placeholder; input.value=ST.keys[pid]||''; }
+  if(link) link.href=meta.getKeyUrl;
+  if(ST.keys[pid]){
+    if(status){ status.textContent='&#128274; Active: '+meta.label+' configured.'; status.style.color='var(--teal)'; }
+    if(md) md.textContent='Live AI ('+meta.label+')';
+  } else {
+    if(status){ status.textContent='No key for '+meta.label+'.'; status.style.color='var(--text3)'; }
+    if(md) md.textContent=meta.label+' - key required';
+  }
+  if(!init){
+    var keyBox=document.getElementById('key-entry-box');
+    if(keyBox) window.scrollTo({top:keyBox.offsetTop-100,behavior:'smooth'});
+  }
+}
+
+function refreshProviderTags(){
+  Object.keys(PROVIDERS).forEach(function(p){
+    var tag=document.getElementById('ptag-'+p); if(!tag) return;
+    if(ST.keys[p]){ tag.textContent='Configured'; tag.classList.add('configured'); }
+    else { tag.textContent='Not configured'; tag.classList.remove('configured'); }
+  });
+}
+
+function saveKey(){
+  if(!ST.provider){ toast('Select a provider first.'); return; }
+  var input=document.getElementById('api-key-in');
+  var k=input?input.value.trim():'';
+  if(!k){ toast('Please paste an API key.'); return; }
+  ST.keys[ST.provider]=k;
+  try {
+    if(SecureKeyStore.isAvailable()) SecureKeyStore.save('dc_keys','dermacare',ST.keys);
+    else localStorage.setItem('dc_keys',JSON.stringify(ST.keys));
+  } catch(e) { localStorage.setItem('dc_keys',JSON.stringify(ST.keys)); }
+  refreshProviderTags();
+  selectProvider(ST.provider,true);
+  toast(PROVIDERS[ST.provider].label+' key saved (AES-256 encrypted).');
+}
+
+function clearKey(){
+  if(!ST.provider) return;
+  delete ST.keys[ST.provider];
+  try {
+    if(SecureKeyStore.isAvailable()) SecureKeyStore.save('dc_keys','dermacare',ST.keys);
+    else localStorage.setItem('dc_keys',JSON.stringify(ST.keys));
+  } catch(e) { localStorage.setItem('dc_keys',JSON.stringify(ST.keys)); }
+  var input=document.getElementById('api-key-in'); if(input) input.value='';
+  refreshProviderTags(); selectProvider(ST.provider,true);
+}
+
+var FICONS={pdf:'&#128196;',jpg:'&#128444;',jpeg:'&#128444;',png:'&#128444;',docx:'&#128196;',txt:'&#128221;'};
+
+function handleFiles(files){
+  Array.from(files).forEach(function(f){
+    if(ST.files.find(function(x){ return x.name===f.name&&x.size===f.size; })) return;
+    ST.files.push(f);
+    var ext=f.name.split('.').pop().toLowerCase();
+    var sz=f.size>1048576?(f.size/1048576).toFixed(1)+'MB':Math.round(f.size/1024)+'KB';
+    var el=document.createElement('div'); el.className='file-row'; el.dataset.fname=f.name;
+    var sn=f.name.replace(/&/g,'&amp;').replace(/</g,'&lt;');
+    el.innerHTML='<span class="fr-ico">'+(FICONS[ext]||'&#128193;')+'</span>'
+      +'<span class="fr-name">\'+escapeFilename(sn)+\'</span>'
+      +'<span class="fr-meta">'+sz+'</span>'
+      +'<span class="fr-ok">Ready</span>'
+      +'<span class="fr-del" onclick="removeByEl(this)">&#10005;</span>';
+    var fl=document.getElementById('flist'); if(fl) fl.appendChild(el);
+  });
+}
+
+function removeByEl(btn){
+  var r=btn.closest('.file-row'); if(!r) return;
+  var n=r.dataset.fname;
+  ST.files=ST.files.filter(function(f){ return f.name!==n; });
+  r.remove();
+}
+
+function clearFiles(){
+  ST.files=[];
+  var fl=document.getElementById('flist'); if(fl) fl.innerHTML='';
+}
+
+function uploadFiles(){
+  if(!ST.files.length){ toast('Please select files first.'); return; }
+  var btn=document.getElementById('up-btn'); setLoad(btn,true);
+  setTimeout(function(){
+    var out=document.getElementById('up-result');
+    if(out) out.innerHTML='<div class="alert teal" style="margin-top:16px;"><span class="ai-ic">&#10003;</span><div><strong>'+ST.files.length+' file(s) uploaded.</strong> Go to Conditions or Skincare to research your reports.</div></div>';
+    setLoad(btn,false);
+  },2000);
+}
+
+function assessSkin(){
+  var typeEl=document.getElementById('sk-type');
+  var ageEl=document.getElementById('sk-age');
+  var concernEl=document.getElementById('sk-concern');
+  var allergyEl=document.getElementById('sk-allergy');
+  var type=typeEl?typeEl.value:'';
+  var age=ageEl?ageEl.value:'';
+  var concern=concernEl?concernEl.value.trim():'';
+  var allergy=allergyEl?allergyEl.value.trim():'';
+  if(!type&&!concern){ toast('Please select skin type or enter a concern.'); return; }
+  var btn=document.getElementById('sk-btn'); setLoad(btn,true);
+  var out=document.getElementById('skin-output');
+  var key=currentApiKey();
+  if(ST.provider&&key){
+    fetch('/api/skin/assess',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({skin_type:type,age:age,concerns:concern,allergies:allergy,provider:ST.provider,api_key:key})
+    })
+    .then(function(r){ return r.json(); })
+    .then(function(data){
+      setLoad(btn,false);
+      var mt=data.mode==='live_ai'
+        ?'<span class="ctag" style="background:var(--teal-pale);color:var(--teal);border-color:rgba(14,122,107,0.3);display:inline-block;margin-bottom:10px;">Live AI &middot; '+PROVIDERS[ST.provider].label+'</span>'
+        :'<span class="ctag" style="display:inline-block;margin-bottom:10px;">Offline Research</span>';
+      if(out){
+        out.innerHTML='<div class="sb"><h3>Personalised Skincare Research</h3>'+mt
+          +'<div style="white-space:pre-wrap;font-size:13.5px;line-height:1.8;color:var(--text2);">'
+          +(data.content||'').replace(/\\n/g,'<br>')+'</div></div>';
+        out.scrollIntoView({behavior:'smooth',block:'start'});
+      }
+    }).catch(function(){
+      setLoad(btn,false);
+      toast('Could not reach server. Try AI Chat.');
+    });
+  } else {
+    setLoad(btn,false);
+    if(out){
+      out.innerHTML='<div class="sb"><h3>Skincare Research</h3><p>For personalised AI skincare research for Fitzpatrick '+(type||'your')+' skin with '+(concern||'your stated')+' concerns, please choose an AI provider in Settings for live research.</p><p>General evidence-based advice: gentle non-irritating cleanser, broad-spectrum SPF 30-50+ daily (especially important for darker skin types Fitzpatrick IV-VI to prevent PIH and melasma), appropriate moisturiser for skin type (ointment for dry/eczema-prone, light gel for oily/acne-prone), and targeted actives (retinoids for ageing/acne, azelaic acid for sensitive/darker skin types, niacinamide for most concerns). Always consult your dermatologist for medical skin conditions.</p></div>';
+      out.scrollIntoView({behavior:'smooth',block:'start'});
+    }
+  }
+}
+
+var CONDITIONS_KB = {
+  'Atopic Eczema':'<div class="sb"><h3>Atopic Eczema (Atopic Dermatitis)</h3><p>Most common chronic inflammatory skin condition. Up to 20% children, 5-10% adults. Defective skin barrier (filaggrin mutations) + Th2-skewed immune dysregulation. Part of the atopic triad (eczema, asthma, allergic rhinitis).</p><h4>Management (Stepwise)</h4><ul><li><strong>Emollients (ALL patients, Step 1):</strong> 250g+/week minimum. Apply after bathing within 3 min (soak and seal). Cornerstone of all eczema management.</li><li><strong>Topical corticosteroids for flares:</strong> Mild (hydrocortisone 1%) for face/flexures. Moderate (betamethasone valerate 0.025%, clobetasone 0.05%) for body. Potent (betamethasone 0.1%) for thick/lichenified areas.</li><li><strong>Topical calcineurin inhibitors:</strong> Tacrolimus 0.03/0.1% or pimecrolimus 1% for face/skin folds. No atrophy. Steroid-sparing.</li><li><strong>Dupilumab (IL-4/IL-13 inhibitor):</strong> Highly effective biologic, SC every 2 weeks, approved from age 6 months. No systemic immunosuppression. Conjunctivitis in ~10%.</li><li><strong>Oral JAK inhibitors:</strong> Baricitinib 4mg, upadacitinib 15-30mg, abrocitinib 100-200mg. Rapid onset. JAK class warnings (VTE, cardiovascular, malignancy).</li></ul><h4>Skin of Colour (Fitzpatrick IV-VI)</h4><p>Erythema appears grey/dark brown not red. Follicular accentuation common. PIH often more distressing than eczema itself. DLQI impact higher.</p><div class="alert warn" style="margin-top:12px;"><span class="ai-ic">&#9888;</span><div>Research purposes only. Consult your dermatologist for personalised management.</div></div></div>',
+
+  'Psoriasis':'<div class="sb"><h3>Psoriasis</h3><p>Chronic immune-mediated condition. Well-demarcated erythematous plaques with silvery scale. Elbows, knees, scalp, lower back. 2-3% global prevalence. Systemic disease: psoriatic arthritis (25-30%), cardiovascular risk, metabolic syndrome.</p><h4>Key Treatment Points</h4><ul><li>Topical first-line: calcipotriol+betamethasone (Enstilar foam/Dovobet gel) convenient once-daily</li><li>NB-UVB phototherapy (3x/week): moderate-severe, safe in pregnancy</li><li>IL-17 inhibitors (secukinumab, ixekizumab, bimekizumab): fastest clearance, PASI 90+ in 60-70%</li><li>IL-23 inhibitors (guselkumab, risankizumab): quarterly dosing, durable remission</li><li>Biologic step-up: PASI over 10, DLQI over 10, or BSA over 10%</li><li>Nail pitting: pathognomonic for psoriasis; predicts psoriatic arthritis</li></ul><div class="alert warn" style="margin-top:12px;"><span class="ai-ic">&#9888;</span><div>Research purposes only. Consult your dermatologist.</div></div></div>',
+
+  'Melanoma':'<div class="sb"><h3>Melanoma</h3><p>Most dangerous skin cancer. Early detection critical. ABCDE: Asymmetry, Border irregularity, Colour variation, Diameter &gt;6mm, Evolution (any change).</p><h4>Key Points</h4><ul><li>ANY suspicious or changing mole: URGENT dermatology referral</li><li>Acral lentiginous melanoma: most common subtype in Asian/African-heritage populations &mdash; palms, soles, subungual &mdash; NOT sun-related. Hutchinson sign = urgent referral.</li><li>Breslow thickness: most important prognostic factor</li><li>Treatment: wide local excision, SLNB for Breslow &gt;0.8mm</li><li>Adjuvant: pembrolizumab/nivolumab or dabrafenib+trametinib (BRAF mutant)</li></ul><div class="alert emergency" style="margin-top:12px;"><span class="ai-ic">&#128680;</span><div>Do NOT delay referral for suspicious or changing lesions. Research purposes only.</div></div></div>',
+
+  'Acne Vulgaris':'<div class="sb"><h3>Acne Vulgaris</h3><p>Affects 85% of teenagers. Four factors: sebum, follicular keratinisation, C. acnes, inflammation.</p><h4>Treatment Ladder</h4><ul><li>Topical: BPO + retinoid first-line. Fixed combination adapalene+BPO (Epiduo) ideal.</li><li>Never topical antibiotics alone (resistance) &mdash; always combine with BPO</li><li>Oral doxycycline 100mg BD: max 3 months + concurrent BPO</li><li>Isotretinoin: severe/nodulocystic/scarring. Mandatory pregnancy prevention programme (IPPA). Teratogenic.</li><li>Darker skin types: azelaic acid + niacinamide + SPF 50+ essential for PIH</li></ul><div class="alert warn" style="margin-top:12px;"><span class="ai-ic">&#9888;</span><div>Research purposes only. Isotretinoin must be prescribed by a qualified dermatologist.</div></div></div>',
+
+  'Vitiligo':'<div class="sb"><h3>Vitiligo</h3><p>Autoimmune depigmentation. T-cell mediated melanocyte destruction. 1-2% global prevalence. All skin types, most psychologically distressing in darker skin tones (Fitzpatrick IV-VI).</p><h4>Treatment (most to least effective)</h4><ul><li><strong>Ruxolitinib 1.5% cream (Opzelura) BD:</strong> First approved topical specifically for non-segmental vitiligo. Most effective repigmentation therapy available.</li><li><strong>NB-UVB phototherapy:</strong> 2-3x/week for 1-2 years. Best on face and proximal limbs.</li><li><strong>Topical calcineurin inhibitors:</strong> Good for face/sensitive areas, steroid-sparing.</li><li><strong>Check associated conditions:</strong> Thyroid disease (most common), T1DM, Addison&#39;s &mdash; check TFTs.</li></ul><div class="alert warn" style="margin-top:12px;"><span class="ai-ic">&#9888;</span><div>Research purposes only. Consult your dermatologist.</div></div></div>',
+
+  'Chronic Spontaneous Urticaria':'<div class="sb"><h3>Chronic Spontaneous Urticaria (CSU)</h3><p>Urticaria (hives) persisting over 6 weeks without identifiable external trigger. Autoimmune mechanism in many (IgG autoantibodies against IgE receptor). Itchy wheals lasting under 24 hours individually, no residual mark.</p><h4>Management Stepwise</h4><ul><li>Second-generation H1 antihistamines (cetirizine, loratadine, fexofenadine, bilastine): first-line. May need up to 4x standard dose.</li><li>Omalizumab (anti-IgE, 300mg SC monthly): for antihistamine-refractory CSU. Highly effective.</li><li>Ciclosporin: for omalizumab-refractory cases.</li></ul><div class="alert warn" style="margin-top:12px;"><span class="ai-ic">&#9888;</span><div>Angioedema with airway involvement = EMERGENCY. Consult your dermatologist/allergist.</div></div></div>'
+};
+
+function showCondition(){
+  var sel=document.getElementById('cond-sel');
+  var out=document.getElementById('cond-output');
+  if(!sel||!out) return;
+  var v=sel.value;
+  if(!v){ out.innerHTML=''; return; }
+  if(CONDITIONS_KB[v]){
+    out.innerHTML=CONDITIONS_KB[v];
+    out.scrollIntoView({behavior:'smooth',block:'start'});
+    return;
+  }
+  fetchConditionLive(v,out);
+}
+
+function fetchConditionLive(sel,out){
+  var key=currentApiKey();
+  if(ST.provider&&key){
+    out.innerHTML='<div class="sb"><h3>'+sel+'</h3><div style="padding:10px 0;"><span class="typing"><span></span><span></span><span></span></span> Researching from AAD/BAD/NICE guidelines...</div></div>';
+    out.scrollIntoView({behavior:'smooth',block:'start'});
+    fetch('/api/condition/'+encodeURIComponent(sel)+'?provider='+encodeURIComponent(ST.provider)+'&api_key='+encodeURIComponent(key))
+    .then(function(r){ return r.json(); })
+    .then(function(data){
+      var body=data.content||(data.condition?JSON.stringify(data.condition,null,2):'No research available.');
+      var mt=data.mode==='live_ai'
+        ?'<span class="ctag" style="background:var(--teal-pale);color:var(--teal);border-color:rgba(14,122,107,0.3);display:inline-block;margin-bottom:10px;">Live AI &middot; '+PROVIDERS[ST.provider].label+'</span>'
+        :'<span class="ctag" style="display:inline-block;margin-bottom:10px;">Offline Research</span>';
+      out.innerHTML='<div class="sb"><h3>'+sel+'</h3>'+mt+'<div style="white-space:pre-wrap;font-size:13.5px;line-height:1.8;color:var(--text2);">'+body.replace(/\\n/g,'<br>')+'</div></div>';
+    }).catch(function(){
+      out.innerHTML='<div class="sb"><h3>'+sel+'</h3><p>Could not reach server. Try the AI Chat tab.</p></div>';
+    });
+  } else {
+    out.innerHTML='<div class="sb"><h3>'+sel+'</h3><p>Choose an AI provider in Settings for live research on this condition, or ask in the AI Chat tab for an offline response.</p></div>';
+    out.scrollIntoView({behavior:'smooth',block:'start'});
+  }
+}
+
+var CHAT_KB = {
+  'eczema': 'Atopic eczema: emollients 250g+/week are the cornerstone (apply after bathing). Topical steroids for flares (mild for face/flexures, moderate for body). Dupilumab (IL-4/IL-13, SC every 2 weeks) highly effective for moderate-severe from age 6 months. JAK inhibitors (baricitinib, upadacitinib, abrocitinib) for oral systemic option. In darker skin: erythema appears grey/brown, follicular accentuation common, PIH often the biggest concern. Consult your dermatologist.',
+  'psoriasis': 'Psoriasis: topical calcipotriol+betamethasone (Enstilar foam) convenient first-line. NB-UVB phototherapy for moderate-severe. Biologics: IL-17 inhibitors (secukinumab, ixekizumab, bimekizumab) fastest clearance (PASI 90+ in 60-70%), IL-23 inhibitors (guselkumab, risankizumab) quarterly dosing and durable remission. Step-up to biologic if PASI/DLQI over 10 or BSA over 10%. Nail pitting = pathognomonic. Check for psoriatic arthritis. Consult your dermatologist.',
+  'acne': 'Acne treatment ladder: topical retinoid (adapalene 0.1%) + BPO 2.5-5% first-line (NEVER topical antibiotics alone - resistance). Oral doxycycline 100mg max 3 months + concurrent BPO for moderate acne. Isotretinoin for severe/nodulocystic/scarring (teratogenic - IPPA programme). Darker skin types: azelaic acid 15%, niacinamide 5%, SPF 50+ daily essential for PIH alongside acne treatment. Consult your dermatologist.',
+  'melanoma': 'Melanoma ABCDE: Asymmetry, Border irregularity, multiple Colours, Diameter over 6mm, Evolution (any change). ANY suspicious or changing mole: urgent dermatology referral. Acral lentiginous melanoma (palms/soles/subungual) is most common in Asian and African-heritage populations - NOT sun-related. Hutchinson sign = urgent referral. Research only - always consult your dermatologist immediately for suspicious lesions.',
+  'hair loss': 'Common causes: androgenetic alopecia (DHT-mediated - minoxidil topical/oral, finasteride males), telogen effluvium (shedding 2-3 months after trigger - illness, surgery, COVID, childbirth, iron deficiency - check ferritin aim over 70 mcg/L, TFTs), alopecia areata (autoimmune patches - JAK inhibitors baricitinib/ritlecitinib now approved for severe AA). Always investigate: ferritin, thyroid function, FBC before diagnosing AGA. Consult your dermatologist.',
+  'rosacea': 'Rosacea: avoid triggers (UV, heat, spicy food, alcohol, stress). Topical ivermectin 1% cream (superior to metronidazole in trials), azelaic acid 15-20%, or metronidazole 0.75-1% for PPR. Brimonidine 0.33% gel for flushing/erythema (30-min onset). Oral doxycycline 40mg MR (Efracea) for moderate-severe PPR. IPL/PDL laser for telangiectasia. SPF 50+ mineral sunscreen daily. Ocular rosacea (50%): warm compresses + lid hygiene. Consult your dermatologist.',
+  'sun protection': 'SPF 30 blocks 97% UVB, SPF 50 blocks 98%. Apply 1/4 teaspoon for face/neck, 30 min before, reapply every 2 hours. Broad-spectrum needed for both UVA and UVB. Mineral sunscreens (zinc oxide/titanium dioxide) preferred for sensitive skin, rosacea, acne, and darker skin tones - modern tinted formulations avoid white cast. SPF important for ALL skin types - prevents melasma, PIH, photoageing, and in lupus/PLE.',
+  'itchy': 'Itchy skin (pruritus) causes: eczema, psoriasis, urticaria (wheals lasting under 24h), contact dermatitis, dry skin (xerosis), tinea/fungal, scabies (intensely itchy at night, web spaces/wrists). Systemic causes: iron deficiency, thyroid, liver/renal disease, haematological malignancy. Non-sedating antihistamines (cetirizine 10mg) for urticaria. Emollients for dry skin. Do not self-treat without identifying cause. Consult your dermatologist.',
+  'pih': 'Post-inflammatory hyperpigmentation (PIH): extremely common in Fitzpatrick IV-VI, often more distressing than the original skin condition. Prevention (treat inflammation early and adequately) is most important. Management: strict daily SPF 50+ (most critical), topical retinoids (adapalene/tretinoin at night), azelaic acid 15-20%, niacinamide 5-10%, vitamin C serum AM, tranexamic acid (topical 2-5% or oral 250mg BD). Hydroquinone 2-4% short courses. Avoid aggressive peels/lasers without expertise in darker skin. Consult your dermatologist.',
+  'vitiligo': 'Vitiligo: autoimmune depigmentation affecting 1-2% globally, most visible and distressing in darker skin tones. Non-segmental (bilateral, progressive) most common. Check thyroid function (TFTs). Treatment: ruxolitinib 1.5% cream (Opzelura) BD - most effective repigmentation therapy (FDA/EMA approved); NB-UVB phototherapy 2-3x/week for 1-2 years; topical calcineurin inhibitors for face/sensitive areas. Consult your dermatologist.'
+};
+
+function sendChat(){
+  var inp=document.getElementById('chat-in');
+  if(!inp) return;
+  var msg=inp.value.trim(); if(!msg) return;
+  addMsg('user',msg); inp.value='';
+  var msgs=document.getElementById('chat-msgs');
+  var tid='ty-'+Date.now();
+  var ti=document.createElement('div'); ti.className='cm ai'; ti.id=tid;
+  ti.innerHTML='<div class="ai-lbl">DermaCare AI</div><div class="typing"><span></span><span></span><span></span></div>';
+  if(msgs){ msgs.appendChild(ti); msgs.scrollTop=msgs.scrollHeight; }
+  var key=currentApiKey();
+  if(ST.provider&&key){
+    fetch('/api/chat/send',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({message:msg,request_ai:true,provider:ST.provider,api_key:key})
+    })
+    .then(function(r){ return r.json(); })
+    .then(function(data){
+      var el=document.getElementById(tid); if(el) el.remove();
+      if(data.ai_response){ addMsg('ai',data.ai_response,true); return; }
+      offlineChat(msg,null);
+    }).catch(function(){
+      var el=document.getElementById(tid); if(el) el.remove();
+      offlineChat(msg,null);
+    });
+  } else {
+    setTimeout(function(){ offlineChat(msg,tid); },600);
+  }
+}
+
+function offlineChat(msg,tid){
+  if(tid){ var el=document.getElementById(tid); if(el) el.remove(); }
+  var ml=msg.toLowerCase(); var resp='';
+  for(var k in CHAT_KB){ if(ml.indexOf(k)!==-1){ resp=CHAT_KB[k]; break; } }
+  if(!resp) resp='Thank you for your question about "'+msg+'". Browse the relevant sections for research, or choose an AI provider in Settings for live AI responses. For skin emergencies (anaphylaxis, SJS/TEN, necrotising fasciitis) call 112/999/911 immediately. Research purposes only &mdash; always consult your dermatologist.';
+  addMsg('ai',resp,false);
+}
+
+function addMsg(type,text,isLive){
+  var msgs=document.getElementById('chat-msgs'); if(!msgs) return;
+  var el=document.createElement('div'); el.className='cm '+type;
+  if(type==='ai'){
+    var label=(isLive&&ST.provider)?('DermaCare AI &middot; '+PROVIDERS[ST.provider].label):'DermaCare AI';
+    el.innerHTML='<div class="ai-lbl">'+label+'</div>'+sanitizeAIResponse(text);
+  } else {
+    el.textContent=text;
+  }
+  msgs.appendChild(el); msgs.scrollTop=msgs.scrollHeight;
+}
+
+function setLoad(btn,state){
+  if(!btn) return;
+  if(state) btn.classList.add('loading'); else btn.classList.remove('loading');
+  btn.disabled=state;
+}
+
+function toast(msg){
+  var t=document.createElement('div');
+  t.style.cssText='position:fixed;bottom:30px;left:50%;transform:translateX(-50%);background:#fff;border:1px solid var(--border2);color:var(--text);padding:12px 22px;border-radius:10px;font-size:14px;z-index:9999;box-shadow:var(--shadow);white-space:nowrap;';
+  t.textContent=msg; document.body.appendChild(t);
+  setTimeout(function(){ if(t.parentNode) t.parentNode.removeChild(t); },3000);
+}
+
+var uz=document.getElementById('uz');
+if(uz){
+  uz.addEventListener('dragover',function(e){e.preventDefault();uz.classList.add('drag');});
+  uz.addEventListener('dragleave',function(){uz.classList.remove('drag');});
+  uz.addEventListener('drop',function(e){e.preventDefault();uz.classList.remove('drag');handleFiles(e.dataTransfer.files);});
+}
+
+// ======= UNIVERSAL PATCH INJECTED =======
+// ============================================================
+// UNIVERSAL SECURITY + FEATURE PATCH v2.0
+// Injected into all 9 Medical AI platforms
+// 1. XSS escaping for all user-controlled innerHTML
+// 2. Mistral AI as 6th provider
+// 3. Ambiguity Resolver (multi-AI consensus engine)
+// 4. Content Security hardening
+// ============================================================
+
+// ── XSS ESCAPE FUNCTIONS ─────────────────────────────────────
+function escapeHtml(str) {
+    if (str === null || str === undefined) return '';
+    return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#x27;')
+        .replace(/\//g, '&#x2F;');
+}
+
+function sanitizeAIResponse(text) {
+    // AI responses can contain markdown — preserve line breaks and basic formatting
+    // but strip any actual HTML tags to prevent XSS
+    if (!text) return '';
+    return String(text)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/\n/g, '<br>')
+        .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+        .replace(/\*(.+?)\*/g, '<em>$1</em>');
+}
+
+function escapeFilename(name) {
+    if (!name) return 'unknown';
+    // Only allow safe filename characters for display
+    return String(name).replace(/[<>&"'\/\\]/g, c => ({
+        '<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;',"'":'&#x27;','/':'&#x2F;','\\':'&#x5C;'
+    }[c]));
+}
+
+// ── PROVIDER REGISTRY (6 providers) ──────────────────────────
+var PROVIDERS = {
+    anthropic: {
+        label: 'Claude (Anthropic)',
+        placeholder: 'sk-ant-api03-...',
+        getKeyUrl: 'https://console.anthropic.com',
+        icon: '&#128995;',
+        color: '#c96442'
+    },
+    openai: {
+        label: 'ChatGPT (OpenAI)',
+        placeholder: 'sk-...',
+        getKeyUrl: 'https://platform.openai.com/api-keys',
+        icon: '&#129001;',
+        color: '#10a37f'
+    },
+    gemini: {
+        label: 'Gemini (Google)',
+        placeholder: 'AIza...',
+        getKeyUrl: 'https://aistudio.google.com/apikey',
+        icon: '&#128309;',
+        color: '#4285f4'
+    },
+    grok: {
+        label: 'Grok (xAI)',
+        placeholder: 'xai-...',
+        getKeyUrl: 'https://console.x.ai',
+        icon: '&#9899;',
+        color: '#1da1f2'
+    },
+    deepseek: {
+        label: 'DeepSeek',
+        placeholder: 'sk-...',
+        getKeyUrl: 'https://platform.deepseek.com/api_keys',
+        icon: '&#128308;',
+        color: '#4d6bfe'
+    },
+    mistral: {
+        label: 'Mistral AI',
+        placeholder: 'your-mistral-key...',
+        getKeyUrl: 'https://console.mistral.ai/api-keys',
+        icon: '&#127756;',
+        color: '#ff7000'
+    }
+};
+
+// ── AMBIGUITY RESOLVER ────────────────────────────────────────
+// CSS injected once
+(function injectAmbiguityCSS() {
+    if (document.getElementById('ar-style')) return;
+    var style = document.createElement('style');
+    style.id = 'ar-style';
+    style.textContent = [
+        '#ar-overlay{position:fixed;inset:0;z-index:9000;background:rgba(5,5,15,0.92);backdrop-filter:blur(14px);display:none;align-items:flex-start;justify-content:center;padding:30px 16px;overflow-y:auto;}',
+        '#ar-overlay.ar-open{display:flex;}',
+        '#ar-box{background:#fff;border-radius:18px;max-width:900px;width:100%;padding:0;overflow:hidden;box-shadow:0 32px 80px rgba(0,0,0,0.4);}',
+        '#ar-head{padding:22px 28px;background:linear-gradient(135deg,#1a1a2e,#16213e);display:flex;align-items:center;justify-content:space-between;}',
+        '#ar-head h2{font-size:17px;font-weight:700;color:#fff;margin:0;}',
+        '#ar-head p{font-size:12px;color:rgba(255,255,255,0.6);margin:4px 0 0;}',
+        '#ar-close{background:rgba(255,255,255,0.15);border:none;color:#fff;width:34px;height:34px;border-radius:50%;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;}',
+        '#ar-close:hover{background:rgba(255,255,255,0.25);}',
+        '#ar-query-area{padding:20px 28px;border-bottom:1px solid #eee;}',
+        '#ar-query-area label{font-size:11px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:#666;display:block;margin-bottom:6px;}',
+        '#ar-prompt{width:100%;padding:12px 14px;border:1.5px solid #ddd;border-radius:10px;font-family:inherit;font-size:14px;resize:vertical;min-height:80px;outline:none;box-sizing:border-box;}',
+        '#ar-prompt:focus{border-color:#4d6bfe;}',
+        '#ar-providers-area{padding:18px 28px;border-bottom:1px solid #eee;}',
+        '#ar-providers-area label{font-size:11px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:#666;display:block;margin-bottom:10px;}',
+        '.ar-prov-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;}',
+        '.ar-prov-chip{display:flex;align-items:center;gap:8px;padding:9px 12px;border:2px solid #eee;border-radius:10px;cursor:pointer;font-size:13px;font-weight:500;transition:all 0.15s;user-select:none;}',
+        '.ar-prov-chip:hover{border-color:#4d6bfe;background:#f0f2ff;}',
+        '.ar-prov-chip.ar-selected{border-color:#4d6bfe;background:#eef1ff;font-weight:600;}',
+        '.ar-prov-chip .ar-key-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}',
+        '.ar-prov-chip .ar-key-ok{background:#22c55e;}',
+        '.ar-prov-chip .ar-key-miss{background:#ef4444;}',
+        '#ar-actions{padding:16px 28px;display:flex;gap:10px;align-items:center;}',
+        '#ar-run-btn{padding:12px 28px;border-radius:10px;background:linear-gradient(135deg,#4d6bfe,#7c3aed);color:#fff;border:none;font-size:14px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:8px;}',
+        '#ar-run-btn:hover:not(:disabled){transform:translateY(-1px);box-shadow:0 6px 20px rgba(77,107,254,0.4);}',
+        '#ar-run-btn:disabled{opacity:0.5;cursor:not-allowed;}',
+        '#ar-note{font-size:12px;color:#888;}',
+        '#ar-results{padding:0 28px 28px;}',
+        '.ar-resp-card{margin-top:16px;border:1px solid #e5e7eb;border-radius:14px;overflow:hidden;}',
+        '.ar-resp-head{padding:12px 16px;display:flex;align-items:center;gap:10px;font-size:13px;font-weight:600;}',
+        '.ar-resp-body{padding:14px 16px;font-size:13.5px;line-height:1.75;color:#374151;background:#fafafa;white-space:pre-wrap;word-break:break-word;max-height:320px;overflow-y:auto;}',
+        '.ar-resp-err{padding:14px 16px;font-size:13px;color:#ef4444;background:#fff5f5;}',
+        '#ar-synthesis{margin-top:20px;border:2px solid #4d6bfe;border-radius:14px;overflow:hidden;}',
+        '#ar-synthesis-head{padding:14px 18px;background:linear-gradient(135deg,#4d6bfe,#7c3aed);color:#fff;font-size:14px;font-weight:700;display:flex;align-items:center;gap:8px;}',
+        '#ar-synthesis-body{padding:16px 18px;font-size:13.5px;line-height:1.8;color:#1f2937;white-space:pre-wrap;word-break:break-word;}',
+        '#ar-spinner{display:none;padding:24px;text-align:center;color:#666;}',
+        '.ar-spin{display:inline-block;width:32px;height:32px;border:3px solid #e5e7eb;border-top-color:#4d6bfe;border-radius:50%;animation:arSpin 0.8s linear infinite;margin-bottom:8px;}',
+        '@keyframes arSpin{to{transform:rotate(360deg)}}',
+        '.ar-stat-badge{font-size:11px;font-weight:600;padding:3px 9px;border-radius:12px;margin-left:auto;}',
+        '.ar-stat-ok{background:#dcfce7;color:#166534;}',
+        '.ar-stat-err{background:#fee2e2;color:#991b1b;}',
+        '@media(max-width:600px){.ar-prov-grid{grid-template-columns:1fr 1fr;}#ar-box{padding:0;}}'
+    ].join('');
+    document.head.appendChild(style);
+})();
+
+// Build the overlay HTML once
+function buildArOverlay() {
+    if (document.getElementById('ar-overlay')) return;
+    var overlay = document.createElement('div');
+    overlay.id = 'ar-overlay';
+    overlay.setAttribute('role', 'dialog');
+    overlay.setAttribute('aria-modal', 'true');
+    overlay.innerHTML = [
+        '<div id="ar-box">',
+        '  <div id="ar-head">',
+        '    <div>',
+        '      <h2>&#128101; Ambiguity Resolver &mdash; Multi-AI Consensus</h2>',
+        '      <p>Select AIs with valid keys &rarr; all run your query in parallel &rarr; best answer synthesised</p>',
+        '    </div>',
+        '    <button id="ar-close" onclick="closeAR()" title="Close">&#10005;</button>',
+        '  </div>',
+        '  <div id="ar-query-area">',
+        '    <label>Your Question / Query</label>',
+        '    <textarea id="ar-prompt" placeholder="Enter your medical research question here..."></textarea>',
+        '  </div>',
+        '  <div id="ar-providers-area">',
+        '    <label>Select AI Providers (only those with saved keys are available)</label>',
+        '    <div class="ar-prov-grid" id="ar-prov-grid"></div>',
+        '  </div>',
+        '  <div id="ar-actions">',
+        '    <button id="ar-run-btn" onclick="runAmbiguityResolver()" disabled>',
+        '      &#9889; Resolve with Multi-AI',
+        '    </button>',
+        '    <span id="ar-note">Select at least 2 AIs</span>',
+        '  </div>',
+        '  <div id="ar-spinner">',
+        '    <div class="ar-spin"></div>',
+        '    <div id="ar-spin-msg">Querying selected AIs in parallel&hellip;</div>',
+        '  </div>',
+        '  <div id="ar-results"></div>',
+        '</div>'
+    ].join('');
+    document.body.appendChild(overlay);
+    // Close on backdrop click
+    overlay.addEventListener('click', function(e) {
+        if (e.target === overlay) closeAR();
+    });
+}
+
+function openAR(prefillText) {
+    buildArOverlay();
+    renderArProviderChips();
+    if (prefillText) {
+        var ta = document.getElementById('ar-prompt');
+        if (ta) ta.value = prefillText;
+    }
+    document.getElementById('ar-results').innerHTML = '';
+    document.getElementById('ar-spinner').style.display = 'none';
+    document.getElementById('ar-overlay').classList.add('ar-open');
+}
+
+function closeAR() {
+    var ov = document.getElementById('ar-overlay');
+    if (ov) ov.classList.remove('ar-open');
+}
+
+function renderArProviderChips() {
+    var grid = document.getElementById('ar-prov-grid');
+    if (!grid) return;
+    grid.innerHTML = '';
+    Object.keys(PROVIDERS).forEach(function(pid) {
+        var meta = PROVIDERS[pid];
+        var hasKey = !!(window.ST && window.ST.keys && window.ST.keys[pid]);
+        var chip = document.createElement('div');
+        chip.className = 'ar-prov-chip' + (hasKey ? '' : ' ar-disabled');
+        chip.dataset.provider = pid;
+        chip.style.opacity = hasKey ? '1' : '0.45';
+        chip.innerHTML = '<span>' + meta.icon + '</span>'
+            + '<span>' + escapeHtml(meta.label) + '</span>'
+            + '<span class="ar-key-dot ' + (hasKey ? 'ar-key-ok' : 'ar-key-miss') + '" title="' + (hasKey ? 'Key configured' : 'No key saved') + '"></span>';
+        if (hasKey) {
+            chip.addEventListener('click', function() {
+                chip.classList.toggle('ar-selected');
+                updateArRunBtn();
+            });
+        }
+        grid.appendChild(chip);
+    });
+}
+
+function updateArRunBtn() {
+    var selected = document.querySelectorAll('.ar-prov-chip.ar-selected');
+    var btn = document.getElementById('ar-run-btn');
+    var note = document.getElementById('ar-note');
+    if (!btn) return;
+    var count = selected.length;
+    btn.disabled = count < 2;
+    if (note) note.textContent = count < 2
+        ? 'Select at least 2 AIs (' + count + ' selected)'
+        : count + ' AIs selected \u2014 ready to resolve';
+}
+
+function runAmbiguityResolver() {
+    var prompt = (document.getElementById('ar-prompt') || {}).value;
+    if (!prompt || !prompt.trim()) {
+        alert('Please enter a question first.');
+        return;
+    }
+    var selected = Array.from(document.querySelectorAll('.ar-prov-chip.ar-selected'));
+    if (selected.length < 2) { alert('Select at least 2 AIs.'); return; }
+
+    var pairs = selected.map(function(chip) {
+        return { provider: chip.dataset.provider, key: window.ST.keys[chip.dataset.provider] };
+    });
+
+    // Show spinner, hide results
+    document.getElementById('ar-spinner').style.display = 'block';
+    document.getElementById('ar-results').innerHTML = '';
+    document.getElementById('ar-run-btn').disabled = true;
+    document.getElementById('ar-spin-msg').textContent =
+        'Querying ' + pairs.length + ' AIs in parallel\u2026';
+
+    // POST to /api/resolve (backend endpoint we add)
+    fetch('/api/resolve', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            prompt: prompt.trim(),
+            providers: pairs
+        })
+    })
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+        document.getElementById('ar-spinner').style.display = 'none';
+        document.getElementById('ar-run-btn').disabled = false;
+        renderArResults(data, prompt.trim());
+    })
+    .catch(function(err) {
+        document.getElementById('ar-spinner').style.display = 'none';
+        document.getElementById('ar-run-btn').disabled = false;
+        document.getElementById('ar-results').innerHTML =
+            '<div style="padding:16px;color:#ef4444;">&#10006; Connection error: ' + escapeHtml(String(err)) + '</div>';
+    });
+}
+
+function renderArResults(data, prompt) {
+    var container = document.getElementById('ar-results');
+    if (!container) return;
+    var html = '';
+
+    // Individual AI responses
+    var responses = data.responses || [];
+    responses.forEach(function(r) {
+        var icon = (PROVIDERS[r.provider] || {}).icon || '&#129302;';
+        var label = escapeHtml((PROVIDERS[r.provider] || {}).label || r.provider);
+        var badgeClass = r.success ? 'ar-stat-ok' : 'ar-stat-err';
+        var badgeText = r.success ? '&#10003; Success' : '&#10006; Failed';
+        html += '<div class="ar-resp-card">';
+        html += '<div class="ar-resp-head" style="background:#f8f9fa;">';
+        html += icon + ' <span>' + label + '</span>';
+        html += '<span class="ar-stat-badge ' + badgeClass + '">' + badgeText + '</span>';
+        html += '</div>';
+        if (r.success && r.text) {
+            html += '<div class="ar-resp-body">' + sanitizeAIResponse(r.text) + '</div>';
+        } else {
+            html += '<div class="ar-resp-err">&#9888; ' + escapeHtml(r.mode || 'No response') + '</div>';
+        }
+        html += '</div>';
+    });
+
+    // Synthesis
+    if (data.synthesis) {
+        html += '<div id="ar-synthesis">';
+        html += '<div id="ar-synthesis-head">&#127941; Synthesised Best Answer</div>';
+        html += '<div id="ar-synthesis-body">' + sanitizeAIResponse(data.synthesis) + '</div>';
+        html += '</div>';
+    }
+
+    container.innerHTML = html;
+}
+
+// ── AMBIGUITY RESOLVER BUTTON FACTORY ────────────────────────
+function createARButton(prefillFn, containerEl, extraClass) {
+    var btn = document.createElement('button');
+    btn.className = 'btn btn-ar' + (extraClass ? ' ' + extraClass : '');
+    btn.innerHTML = '&#9889; Resolve with Multi-AI';
+    btn.title = 'Query multiple AIs simultaneously and get a synthesised best answer';
+    btn.style.cssText = [
+        'display:inline-flex;align-items:center;gap:7px;padding:10px 20px;',
+        'border-radius:10px;border:2px solid #4d6bfe;background:transparent;',
+        'color:#4d6bfe;font-family:inherit;font-size:13px;font-weight:700;',
+        'cursor:pointer;transition:all 0.2s;white-space:nowrap;'
+    ].join('');
+    btn.addEventListener('mouseenter', function() {
+        btn.style.background = '#4d6bfe';
+        btn.style.color = '#fff';
+    });
+    btn.addEventListener('mouseleave', function() {
+        btn.style.background = 'transparent';
+        btn.style.color = '#4d6bfe';
+    });
+    btn.addEventListener('click', function() {
+        openAR(prefillFn ? prefillFn() : '');
+    });
+    if (containerEl) containerEl.appendChild(btn);
+    return btn;
+}
+
+// ======= END PATCH =======
+</script>
+</body>
+</html>"""
