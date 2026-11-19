@@ -86,6 +86,14 @@ def rate_limit_check():
     if len(_RATE_STORE[cid]) >= 30: return False
     _RATE_STORE[cid].append(now); return True
 
+# --- Khoanh vung nam (melasma) ---
+try:
+    from melasma_seg import register as register_melasma
+    register_melasma(app, rate_limit_check)
+    log.info("Da gan /api/melasma/segment")
+except Exception as e:
+    log.warning("Khong gan duoc module melasma: %s", e)
+
 def sanitise_api_key(key):
     if not key or not isinstance(key, str): return ''
     key = key.strip()

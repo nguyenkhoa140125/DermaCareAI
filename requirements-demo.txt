@@ -1,0 +1,10 @@
+# Them cho may chu DermaCare AI (chay cung moi truong da cai requirements.txt)
+flask>=3.0
+flask-cors
+requests
+Pillow
+PyMuPDF
+anthropic
+python-docx
+colorama
+psutil

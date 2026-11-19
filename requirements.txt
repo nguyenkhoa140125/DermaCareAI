@@ -1,0 +1,10 @@
+# Cai PyTorch (ban CUDA) TRUOC, xem README muc 4:
+#   pip install torch torchvision --index-url https://download.pytorch.org/whl/cu121
+# Da thu: torch 2.5.1+cu121, ultralytics 8.4.212, Python 3.12.10
+transformers>=4.36
+segmentation-models-pytorch
+ultralytics>=8.3
+opencv-python>=4.9
+numpy>=1.24
+pandas>=2.0
+pillow>=10.0

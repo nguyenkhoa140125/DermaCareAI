@@ -1,0 +1,45 @@
+﻿# --- Du lieu va ket qua (khong dua len git) ---
+/data/
+/runs/
+memi_raw/
+memi_processed/
+Pigmentation_Melasma_Dark_Spots*/
+*.zip
+
+# --- Trong so mo hinh (~100 MB moi tep, vuot gioi han cua GitHub) ---
+*.pt
+*.safetensors
+*.pth
+*.onnx
+*.bin
+DermaCareAI/models/
+models/
+
+# --- Moi truong va tep tam ---
+venv/
+.venv/
+env/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+predictions/
+ket_qua/
+rf_eval*/
+rf_test/
+
+# --- Nhat ky va file he thong ---
+*.log
+DermaCareAI/logs/
+logs/
+reports_db/
+DermaCareAI/uploads/
+uploads/
+cay_thu_muc*.txt
+
+# --- IDE va he dieu hanh ---
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+desktop.ini
