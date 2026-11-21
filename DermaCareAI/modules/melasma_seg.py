@@ -1,22 +1,26 @@
 """
-melasma_seg.py -- Khoanh vung nghi ngo nam tren anh khuon mat (U-Net, ghep cac mo hinh cac fold).
+melasma_seg.py -- Module khoanh vùng nghi ngờ nám và đánh giá lâm sàng DermaCare AI.
 
-Gan vao DermaCare: them 3 dong vao server.py (xem HUONG_DAN_DEMO.md):
-    from melasma_seg import register
-    register(app, rate_limit_check)
+Hỗ trợ 3 chức năng chính:
+1. Đánh giá nguy cơ nám từ bảng khảo sát dịch tễ học (XGBoost / Clinical Risk) theo nghiên cứu BV Phong - Da liễu Quy Hòa.
+2. Pipeline Hướng 1 (Coarse-to-Fine): YOLO / YuNet phát hiện khuôn mặt & cắt 5 ROI giải phẫu ở độ phân giải gốc
+   -> U-Net ResNet34 phân vùng trên từng ROI -> Tự động tính chỉ số diện tích và mức độ nặng MASI (0 - 48).
+3. Pipeline toàn mặt (Baseline): U-Net 5-fold ensemble phân vùng nhanh toàn bộ khung ảnh.
 
 Endpoint:
-    GET  /api/melasma/status    kiem tra thu vien + mo hinh
-    POST /api/melasma/segment   multipart, truong 'image' -> JSON (anh goc, anh phu mask, % dien tich, canh bao)
+  GET  /api/melasma/status        kiểm tra trạng thái các mô hình
+  POST /api/melasma/risk_survey   tiếp nhận dữ liệu khảo sát và trả về % nguy cơ + phân tích
+  POST /api/melasma/pipeline_hg1  chạy quy trình 2 giai đoạn (ROI + MASI)
+  POST /api/melasma/segment       hỗ trợ cả mode="hg1" (mặc định) và mode="baseline"
 
-Quyen rieng tu: anh duoc xu ly trong bo nho va KHONG duoc luu; log chi ghi kich thuoc, thoi gian, %.
-Mo hinh duoc nap luc co yeu cau dau tien, nen DermaCare van chay binh thuong neu chua cai torch.
+Quyền riêng tư: ảnh được xử lý hoàn toàn trong bộ nhớ RAM, không lưu ảnh xuống đĩa.
 """
 import base64
 import io
 import json
 import logging
 import os
+import sys
 import threading
 import time
 from importlib.util import find_spec
@@ -29,20 +33,37 @@ from PIL import Image, ImageOps
 
 log = logging.getLogger("DermaCareAI.melasma")
 
+MODULE_DIR = Path(__file__).resolve().parent
+REPO_ROOT = MODULE_DIR.parent.parent
+MELASMA_DIR = REPO_ROOT / "melasma"
+RUNS_ROI_DIR = REPO_ROOT / "runs" / "unet_roi"
+FACE_MODEL_PATH = REPO_ROOT / "models" / "face" / "yolov8n-face.pt"
+YUNET_MODEL_PATH = MELASMA_DIR / "face_detection_yunet_2023mar.onnx"
+
+# Thêm melasma/ vào sys.path để gọi hg1_roi, hg1_masi, pipeline_hg1
+if str(MELASMA_DIR) not in sys.path:
+    sys.path.insert(0, str(MELASMA_DIR))
+if str(MODULE_DIR) not in sys.path:
+    sys.path.insert(0, str(MODULE_DIR))
+
+try:
+    import melasma_risk
+except ImportError:
+    melasma_risk = None
+
 MODEL_DIR = Path(os.environ.get("MELASMA_MODEL_DIR",
                                 Path(__file__).resolve().parent.parent / "models" / "melasma"))
 MAX_BYTES = 10 * 1024 * 1024   # 10 MB
-MAX_SIDE = 1600                # canh dai toi da khi xu ly
-WARN_BIG_AREA = 40.0           # % khung anh: tren muc nay thuong la anh can canh / khong phai mat
+MAX_SIDE = 1600                # cạnh dài tối đa khi xử lý
+WARN_BIG_AREA = 40.0           # % khung ảnh
 
 MEAN = np.array([0.485, 0.456, 0.406], dtype=np.float32)
 STD = np.array([0.229, 0.224, 0.225], dtype=np.float32)
 
-DISCLAIMER = ("Công cụ tham khảo, không phải chẩn đoán y khoa và không thay thế bác sĩ da liễu. "
-              "Kết quả có thể sai; hãy đến khám nếu bạn lo lắng về làn da.")
-ACCURACY_NOTE = ("Trên 130 ảnh chụp lâm sàng của bộ MEMI-DS, một mô hình đơn lẻ ước lượng sai lệch trung bình "
-                 "khoảng 3–4 điểm phần trăm diện tích. Bản ghép 5 mô hình dùng ở đây chưa được kiểm định riêng, "
-                 "và độ chính xác trên ảnh điện thoại chưa được đo.")
+DISCLAIMER = ("Công cụ tham khảo và hỗ trợ nghiên cứu, không phải chẩn đoán y khoa và không thay thế bác sĩ da liễu. "
+              "Kết quả ước lượng MASI dựa trên quy tắc tự động; hãy đến khám chuyên khoa nếu bạn lo lắng về làn da.")
+ACCURACY_NOTE = ("Được huấn luyện và kiểm định chéo 5-fold theo bệnh nhân trên bộ dữ liệu MEMI-DS. "
+                 "Pipeline Hướng 1 cắt 5 vùng giải phẫu (trán, má phải, má trái, mũi, cằm) ở độ phân giải gốc.")
 
 
 class ModelUnavailable(Exception):
@@ -50,7 +71,7 @@ class ModelUnavailable(Exception):
 
 
 # ----------------------------------------------------------------------------
-# Xu ly anh (numpy / OpenCV / Pillow, khong can torch)
+# Tiện ích xử lý ảnh
 # ----------------------------------------------------------------------------
 def decode_image(data):
     try:
@@ -92,8 +113,8 @@ def unletterbox(prob, info, orig_hw):
 def make_overlay(img_rgb, mask, alpha=0.45):
     ov = img_rgb.astype(np.float32).copy()
     m = mask.astype(bool)
-    ov[m] = (1 - alpha) * ov[m] + alpha * np.array([255, 0, 0], dtype=np.float32)
-    return ov.astype(np.uint8)
+    ov[m] = (1 - alpha) * ov[m] + alpha * np.array([255, 30, 30], dtype=np.float32)
+    return np.clip(ov, 0, 255).astype(np.uint8)
 
 
 def to_data_url(img_rgb, quality=88):
@@ -109,21 +130,18 @@ def build_warnings(rgb, pct):
     if min(h, w) < 300:
         out.append({"level": "warn", "text": "Ảnh có độ phân giải thấp nên kết quả kém tin cậy. Hãy chụp ảnh lớn hơn."})
     if w / h > 1.25:
-        out.append({"level": "warn", "text": "Ảnh nằm ngang. Mô hình học trên ảnh khuôn mặt chụp dọc; "
-                                             "hãy chụp dọc và để thấy cả khuôn mặt."})
+        out.append({"level": "warn", "text": "Ảnh nằm ngang. Khuyến khích chụp dọc thấy rõ toàn bộ khuôn mặt."})
     if pct > WARN_BIG_AREA:
-        out.append({"level": "warn", "text": "Vùng được khoanh rất lớn so với khung ảnh. Điều này thường gặp khi ảnh "
-                                             "chụp quá gần hoặc không phải khuôn mặt; hãy chụp lại từ xa hơn."})
+        out.append({"level": "warn", "text": "Vùng được khoanh rất lớn so với khung ảnh. Cần kiểm tra xem ảnh có bị chụp cận cảnh quá mức không."})
     if pct < 0.5:
-        out.append({"level": "info", "text": "Mô hình không thấy vùng sắc tố rõ rệt. Sắc tố nhạt và lan tỏa "
-                                             "có thể bị bỏ sót, nên đây chưa phải kết luận là da không có nám."})
+        out.append({"level": "info", "text": "Mô hình không thấy vùng sắc tố rõ rệt (dưới 0.5%). Sắc tố nhạt lan tỏa có thể cần kiểm tra thêm."})
     return out
 
 
 # ----------------------------------------------------------------------------
-# Mo hinh
+# 1. Baseline Full-Face Segmenter
 # ----------------------------------------------------------------------------
-class Segmenter:
+class BaselineSegmenter:
     def __init__(self):
         self._lock = threading.Lock()
         self._models = None
@@ -145,12 +163,10 @@ class Segmenter:
                 import torch
                 import segmentation_models_pytorch as smp
             except ImportError:
-                raise ModelUnavailable("Máy chủ chưa cài PyTorch. Chạy: pip install torch "
-                                       "segmentation-models-pytorch (xem HUONG_DAN_DEMO.md).")
+                raise ModelUnavailable("Máy chủ chưa cài PyTorch hoặc segmentation-models-pytorch.")
             ckpts = sorted(MODEL_DIR.glob("fold*/best.pt"))
             if not ckpts:
-                raise ModelUnavailable(f"Chưa có mô hình trong {MODEL_DIR}. Chạy export_demo_models.py "
-                                       "để chép các tệp best.pt vào đó.")
+                raise ModelUnavailable(f"Chưa có mô hình trong {MODEL_DIR}.")
             device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
             models, thrs = [], []
             for p in ckpts:
@@ -165,10 +181,7 @@ class Segmenter:
                 thrs.append(float(cfg.get("thr", 0.5)))
             self._torch, self._device, self._thr = torch, device, float(np.mean(thrs))
             self._models = models
-            log.info("Da nap %d mo hinh U-Net tren %s", len(models), device)
-
-    def info(self):
-        return {"n_models": len(self._models or []), "device": str(self._device), "thr": self._thr}
+            log.info("Da nap %d mo hinh U-Net Full-Face tren %s", len(models), device)
 
     def predict(self, rgb, tta=True):
         self.load()
@@ -186,24 +199,65 @@ class Segmenter:
         return np.mean(probs, axis=0)
 
 
-SEG = Segmenter()
+# ----------------------------------------------------------------------------
+# 2. Hướng 1 Coarse-to-Fine (ROI + MASI) Segmenter
+# ----------------------------------------------------------------------------
+class HG1Segmenter:
+    def __init__(self):
+        self._lock = threading.Lock()
+        self._seg_fn = None
+        self._thr = 0.5
+        self._device = None
+        self._ckpts = []
+
+    def available(self):
+        roi_ckpts = sorted(list(RUNS_ROI_DIR.glob("*/best.pt")))
+        has_face = FACE_MODEL_PATH.exists() or YUNET_MODEL_PATH.exists()
+        return len(roi_ckpts) > 0 and has_face
+
+    def load(self, tta=False):
+        if self._seg_fn is not None:
+            return
+        with self._lock:
+            if self._seg_fn is not None:
+                return
+            roi_ckpts = sorted(list(RUNS_ROI_DIR.glob("*/best.pt")))
+            if not roi_ckpts:
+                raise ModelUnavailable(f"Chưa có mô hình ROI trong {RUNS_ROI_DIR}.")
+            try:
+                import torch
+                import pipeline_hg1 as P
+            except ImportError as e:
+                raise ModelUnavailable(f"Thiếu thư viện để chạy Hướng 1: {e}")
+
+            device = "cuda" if torch.cuda.is_available() else "cpu"
+            seg_fn, thr = P.make_segment_fn(roi_ckpts, device=device, tta=tta)
+            self._seg_fn = seg_fn
+            self._thr = thr
+            self._device = device
+            self._ckpts = roi_ckpts
+            log.info("Da nap %d mo hinh U-Net ROI cho Huong 1 tren %s", len(roi_ckpts), device)
 
 
-def analyse(rgb, tta=True):
+SEG_BASELINE = BaselineSegmenter()
+SEG_HG1 = HG1Segmenter()
+
+
+def analyse_baseline(rgb, tta=True):
     t0 = time.time()
-    prob = SEG.predict(rgb, tta=tta)
-    thr = SEG._thr
+    prob = SEG_BASELINE.predict(rgb, tta=tta)
+    thr = SEG_BASELINE._thr
     mask = (prob > thr).astype(np.uint8)
     pct = 100.0 * float(mask.mean())
-    info = SEG.info()
     return {
         "success": True,
+        "mode": "baseline",
         "area_percent": round(pct, 1),
         "original": to_data_url(rgb),
         "overlay": to_data_url(make_overlay(rgb, mask)),
         "image_size": [int(rgb.shape[1]), int(rgb.shape[0])],
         "warnings": build_warnings(rgb, pct),
-        "n_models": info["n_models"],
+        "n_models": len(SEG_BASELINE._models or []),
         "tta": bool(tta),
         "seconds": round(time.time() - t0, 2),
         "accuracy_note": ACCURACY_NOTE,
@@ -211,8 +265,92 @@ def analyse(rgb, tta=True):
     }
 
 
+def analyse_hg1(rgb, tta=False, view="auto"):
+    t0 = time.time()
+    SEG_HG1.load(tta=tta)
+    import hg1_roi as R
+    import pipeline_hg1 as P
+
+    face_weights = str(FACE_MODEL_PATH) if FACE_MODEL_PATH.exists() else None
+    yunet_path = str(YUNET_MODEL_PATH) if YUNET_MODEL_PATH.exists() else None
+
+    face = R.detect_face(rgb, weights=face_weights, yunet_path=yunet_path)
+    if face is None:
+        raise ValueError("Không phát hiện được khuôn mặt trong ảnh. Hãy chụp thẳng hoặc nghiêng rõ khuôn mặt.")
+
+    result, full_mask, rois = P.analyse_image(rgb, face, SEG_HG1._seg_fn, thr=SEG_HG1._thr, view=view)
+    overlay_rgb = P.render(rgb, face, rois, full_mask, result)
+
+    # Tạo ảnh crop chi tiết từng ROI
+    roi_cards = {}
+    roi_vn_names = {
+        "forehead": "Trán (Forehead)",
+        "right_malar": "Gò má phải (Right Malar)",
+        "left_malar": "Gò má trái (Left Malar)",
+        "nose": "Vùng mũi (Nose)",
+        "chin": "Vùng cằm (Chin)",
+    }
+    for name, r in rois.items():
+        crop = R.crop_box(rgb, r["box"])
+        x0, y0, x1, y1 = r["box"]
+        c_mask = full_mask[y0:y1, x0:x1]
+        c_ov = make_overlay(crop, c_mask)
+        m = result["rois"][name]
+        roi_cards[name] = {
+            "title": roi_vn_names.get(name, name),
+            "crop_url": to_data_url(c_ov),
+            "area_percent": round(m["area_percent"], 1),
+            "A": m["A"],
+            "D": m["D"],
+            "H": m["H"],
+            "delta_L": round(m["delta_L"], 2) if m.get("delta_L") is not None else None,
+            "contrast_dE": round(m["contrast_dE"], 2) if m.get("contrast_dE") is not None else None,
+            "d_reliable": m.get("d_reliable", True),
+            "warnings": m.get("warnings", []),
+        }
+
+    masi_val = result["masi"]["masi"]
+    if masi_val < 10.0:
+        masi_severity = "Nhẹ (Mild)"
+        masi_class = "mild"
+    elif masi_val <= 20.0:
+        masi_severity = "Trung bình (Moderate)"
+        masi_class = "moderate"
+    else:
+        masi_severity = "Nặng (Severe)"
+        masi_class = "severe"
+
+    pct = 100.0 * float(full_mask.mean())
+    return {
+        "success": True,
+        "mode": "hg1",
+        "area_percent": round(pct, 1),
+        "masi": {
+            "score": round(masi_val, 1),
+            "severity": masi_severity,
+            "severity_class": masi_class,
+            "complete": result["masi"]["complete"],
+            "reliable": result["masi"]["reliable"],
+            "contributions": {k: round(v, 2) for k, v in result["masi"]["contributions"].items()},
+            "unreliable_D": result["masi"]["unreliable_D"],
+        },
+        "roi_cards": roi_cards,
+        "rois": result["rois"],
+        "face": result["face"],
+        "view": result["view"],
+        "original": to_data_url(rgb),
+        "overlay": to_data_url(overlay_rgb),
+        "image_size": [int(rgb.shape[1]), int(rgb.shape[0])],
+        "warnings": result["warnings"],
+        "n_models": len(SEG_HG1._ckpts),
+        "seconds": round(time.time() - t0, 2),
+        "accuracy_note": ACCURACY_NOTE,
+        "disclaimer": DISCLAIMER,
+    }
+
+
 # ----------------------------------------------------------------------------
-# Flask
+# Flask Blueprint & Endpoints
 # ----------------------------------------------------------------------------
 bp = Blueprint("melasma", __name__)
 _rate_limit = None
@@ -220,13 +358,34 @@ _rate_limit = None
 
 @bp.route("/api/melasma/status")
 def status():
-    ok = SEG.available()
-    return jsonify({"available": ok, "model_dir": str(MODEL_DIR),
-                    "message": "Sẵn sàng." if ok else
-                    "Chưa sẵn sàng: cần cài torch, segmentation-models-pytorch và chép mô hình vào models/melasma."})
+    hg1_ok = SEG_HG1.available()
+    base_ok = SEG_BASELINE.available()
+    return jsonify({
+        "available": hg1_ok or base_ok,
+        "hg1_available": hg1_ok,
+        "baseline_available": base_ok,
+        "risk_survey_available": melasma_risk is not None,
+        "message": "Hệ thống sẵn sàng (Hỗ trợ Coarse-to-Fine Hướng 1, Toàn mặt, và Khảo sát nguy cơ)."
+    })
+
+
+@bp.route("/api/melasma/risk_survey", methods=["POST"])
+def risk_survey():
+    if _rate_limit is not None and not _rate_limit():
+        return jsonify({"success": False, "error": "Bạn gửi quá nhiều yêu cầu. Hãy đợi một chút."}), 429
+    if melasma_risk is None:
+        return jsonify({"success": False, "error": "Chưa nạp được module khảo sát lâm sàng."}), 500
+    try:
+        data = request.get_json(silent=True) or request.form.to_dict()
+        res = melasma_risk.evaluate_risk(data)
+        return jsonify(res)
+    except Exception as e:
+        log.exception("Loi khi danh gia khao sat nguy co")
+        return jsonify({"success": False, "error": f"Lỗi xử lý khảo sát: {e}"}), 400
 
 
 @bp.route("/api/melasma/segment", methods=["POST"])
+@bp.route("/api/melasma/pipeline_hg1", methods=["POST"])
 def segment():
     if _rate_limit is not None and not _rate_limit():
         return jsonify({"success": False, "error": "Bạn gửi quá nhiều yêu cầu. Hãy đợi một phút rồi thử lại."}), 429
@@ -242,21 +401,37 @@ def segment():
         return jsonify({"success": False, "error": str(e)}), 400
     if min(rgb.shape[:2]) < 128:
         return jsonify({"success": False, "error": "Ảnh quá nhỏ (dưới 128 điểm ảnh). Hãy chọn ảnh lớn hơn."}), 400
+
+    # Chế độ phân tích: hg1 (mặc định nếu có) hoặc baseline
+    mode = request.form.get("mode", "hg1" if SEG_HG1.available() else "baseline")
+    tta = request.form.get("tta", "0") in ("1", "true", "True")
+    view = request.form.get("view", "auto")
+
     try:
-        result = analyse(rgb, tta=request.form.get("tta", "1") != "0")
+        if mode == "hg1" and SEG_HG1.available():
+            result = analyse_hg1(rgb, tta=tta, view=view)
+        elif SEG_BASELINE.available():
+            result = analyse_baseline(rgb, tta=tta)
+        elif SEG_HG1.available():
+            result = analyse_hg1(rgb, tta=tta, view=view)
+        else:
+            return jsonify({"success": False, "error": "Chưa có mô hình nào sẵn sàng để phân tích."}), 503
+    except ValueError as e:
+        return jsonify({"success": False, "error": str(e)}), 400
     except ModelUnavailable as e:
         return jsonify({"success": False, "error": str(e)}), 503
     except RuntimeError as e:
         if "out of memory" in str(e).lower():
-            log.error("Het bo nho GPU khi phan tich anh %sx%s", rgb.shape[1], rgb.shape[0])
+            log.error("Hết bộ nhớ GPU khi phân tích ảnh %sx%s", rgb.shape[1], rgb.shape[0])
             return jsonify({"success": False, "error": "Hết bộ nhớ đồ họa. Hãy thử ảnh nhỏ hơn."}), 503
-        log.exception("Loi khi phan tich anh")
-        return jsonify({"success": False, "error": "Phân tích thất bại. Xem nhật ký máy chủ để biết chi tiết."}), 500
-    except Exception:
-        log.exception("Loi khi phan tich anh")
-        return jsonify({"success": False, "error": "Phân tích thất bại. Xem nhật ký máy chủ để biết chi tiết."}), 500
-    log.info("melasma: anh %sx%s, %.1f%% (%.2fs, %d mo hinh)", rgb.shape[1], rgb.shape[0],
-             result["area_percent"], result["seconds"], result["n_models"])
+        log.exception("Lỗi khi phân tích ảnh")
+        return jsonify({"success": False, "error": f"Phân tích thất bại: {e}"}), 500
+    except Exception as e:
+        log.exception("Lỗi khi phân tích ảnh")
+        return jsonify({"success": False, "error": f"Phân tích thất bại: {e}"}), 500
+
+    log.info("melasma (%s): %sx%s, %.1f%% (%.2fs)", result.get("mode"), rgb.shape[1], rgb.shape[0],
+             result.get("area_percent", 0), result.get("seconds", 0))
     return jsonify(result)
 
 

@@ -18,15 +18,29 @@ models/
 # --- Moi truong va tep tam ---
 venv/
 .venv/
+.venv_gpu/
 env/
 __pycache__/
 *.pyc
 *.pyo
 *.pyd
+.predictions/
 predictions/
 ket_qua/
+ket_qua_hg1/
+qa_roi/
 rf_eval*/
 rf_test/
+
+# --- Cau hinh nhay cam va database dia phuong ---
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.sqlite
+*.sqlite3
+*.db
 
 # --- Nhat ky va file he thong ---
 *.log

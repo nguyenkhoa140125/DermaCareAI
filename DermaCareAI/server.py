@@ -65,9 +65,14 @@ DISCLAIMER = (
 )
 
 log_file = LOGS_DIR / f"server_{datetime.date.today()}.log"
+handlers = [logging.StreamHandler(sys.stdout)]
+try:
+    handlers.insert(0, logging.FileHandler(log_file, encoding="utf-8"))
+except Exception:
+    pass
 logging.basicConfig(level=logging.INFO,
     format="[%(asctime)s] %(levelname)s %(message)s",
-    handlers=[logging.FileHandler(log_file, encoding="utf-8"), logging.StreamHandler(sys.stdout)])
+    handlers=handlers)
 log = logging.getLogger("DermaCareAI")
 
 app = Flask(__name__, static_folder=str(STATIC_DIR))
@@ -189,8 +194,11 @@ KNOWLEDGE = {
 }
 
 def save_knowledge():
-    with open(DATA_DIR / "derma_knowledge.json", "w", encoding="utf-8") as f:
-        json.dump(KNOWLEDGE, f, indent=2, ensure_ascii=False)
+    try:
+        with open(DATA_DIR / "derma_knowledge.json", "w", encoding="utf-8") as f:
+            json.dump(KNOWLEDGE, f, indent=2, ensure_ascii=False)
+    except Exception as e:
+        log.warning("Khong ghi duoc derma_knowledge.json: %s", e)
 
 def load_sessions():
     sf = DATA_DIR / "sessions.json"

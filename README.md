@@ -13,7 +13,7 @@
 
 - **Đầu vào:** một ảnh khuôn mặt (chụp thẳng hoặc nghiêng khoảng 45 độ).
 - **Đầu ra:** ảnh phủ các vùng nghi ngờ nám (màu đỏ), mặt nạ nhị phân và **phần trăm diện tích khung ảnh** mà các vùng đó chiếm.
-- **Không làm:** chẩn đoán, phân độ nặng nhẹ (MASI), đề xuất điều trị.
+- **Không làm:** chẩn đoán, đề xuất điều trị. Chỉ số MASI tự động (mục 7b) là **ước lượng tham khảo**, chưa kiểm chứng với bác sĩ.
 
 Repo gồm hai phần:
 
@@ -64,7 +64,12 @@ Nhãn của MEMI-DS khá thô nên Dice bị giới hạn. Xem mục [Hạn ch�
 │   ├── train_unet_neg.py       # thí nghiệm mẫu âm (kết quả âm tính)
 │   ├── neg_utils.py, fp_normals.py
 │   ├── predict.py              # dự đoán bằng dòng lệnh (1 mô hình hoặc ghép nhiều mô hình)
-│   └── export_demo_models.py   # chép trọng số vào DermaCare để chạy demo
+│   ├── export_demo_models.py   # chép trọng số vào DermaCare để chạy demo
+│   ├── hg1_roi.py              # Hướng 1, giai đoạn 1: YOLO tìm khuôn mặt + chia ROI
+│   ├── hg1_masi.py             # Hướng 1: điểm A/D/H và công thức MASI
+│   ├── prepare_roi.py          # cắt ROI từ MEMI-DS để train giai đoạn 2
+│   ├── pipeline_hg1.py         # chạy cả pipeline: ảnh mặt -> ROI -> phân vùng -> MASI
+│   └── test_hg1.py             # kiểm tra logic bằng dữ liệu giả (không cần GPU)
 ├── DermaCareAI/                # nền tảng DermaCare
 │   ├── server.py
 │   ├── modules/melasma_seg.py  # module demo (thêm điểm cuối /api/melasma/*)
@@ -184,41 +189,77 @@ python melasma/predict.py --image thu_muc_anh --out ket_qua --tta --ckpt \
 Ra: `<tên>_overlay.jpg`, `<tên>_mask.png` (cùng kích thước ảnh gốc) và `results.json` (phần trăm diện tích).
 Bản ghép 5 mô hình của các fold **không** dùng để báo cáo Dice vì mỗi mô hình đã thấy ảnh kiểm tra của các fold khác.
 
-## 8. Demo web trong DermaCare AI
+## 7b. Pipeline Hướng 1 (Coarse-to-Fine): YOLO tìm ROI → phân vùng từng ROI → MASI
 
-Demo thêm hai điểm cuối vào máy chủ Flask của DermaCare và một trang web. Mô hình chỉ được nạp khi có yêu cầu đầu tiên, nên DermaCare vẫn chạy bình thường nếu chưa cài PyTorch.
-
-1. **Chép trọng số** của 5 fold U-Net gốc vào DermaCare:
-   ```bash
-   python melasma/export_demo_models.py --runs runs/unet_r34 --dest DermaCareAI/models/melasma
-   ```
-   (Không dùng `runs/unet_neg`: mô hình đó đã bị loại.)
-2. **Gắn module vào `DermaCareAI/server.py`** nếu chưa có, dán đoạn sau ngay sau hàm `rate_limit_check`:
-   ```python
-   # --- Khoanh vung nam (melasma) ---
-   try:
-       from melasma_seg import register as register_melasma
-       register_melasma(app, rate_limit_check)
-       log.info("Da gan /api/melasma/segment")
-   except Exception as e:
-       log.warning("Khong gan duoc module melasma: %s", e)
-   ```
-3. **Chạy máy chủ bằng môi trường có PyTorch** (các tệp `.bat` của DermaCare tạo môi trường riêng không có PyTorch):
-   ```bash
-   pip install -r requirements-demo.txt
-   cd DermaCareAI
-   python server.py
-   ```
-4. Mở <http://localhost:5090/melasma.html>. Kiểm tra `http://localhost:5090/api/melasma/status` phải trả `"available": true`.
-
-**API:**
-
-```bash
-curl -F "image=@anh.jpg" http://localhost:5090/api/melasma/segment
+```
+Ảnh mặt → [YOLO face] → ROI (trán, má phải, má trái, mũi, cằm) → crop ở độ phân giải gốc
+        → [U-Net / SegFormer huấn luyện trên ROI] → vùng nám từng ROI → diện tích % + MASI
 ```
 
-Phản hồi JSON: `success`, `area_percent`, `original` và `overlay` (data URL JPEG), `image_size`, `warnings`, `n_models`, `tta`, `seconds`, `accuracy_note`, `disclaimer`.
-Mã lỗi: 400 (không có ảnh, ảnh hỏng hoặc quá nhỏ), 413 (ảnh trên 10 MB), 429 (quá giới hạn tốc độ), 503 (thiếu PyTorch hoặc chưa có mô hình), 500 (lỗi khi phân tích).
+**Bước 0. Kiểm tra logic (không cần GPU, dữ liệu hay mô hình):** `python melasma/test_hg1.py`
+
+**Bước 1. Trọng số nhận diện khuôn mặt.** Cần một file `.pt` của YOLO đã huấn luyện nhận diện khuôn mặt (ví dụ YOLOv8-face),
+tự tải về và đặt vào `models/face/`. Không có file này code vẫn chạy bằng Haar Cascade của OpenCV nhưng ROI kém chính xác hơn.
+Kiểm tra giấy phép trọng số trước khi dùng (Ultralytics theo AGPL-3.0).
+
+**Bước 2. Xem ROI có cắt đúng không (bắt buộc, vì ROI chia theo tỉ lệ hộp khuôn mặt):**
+
+```bash
+python melasma/pipeline_hg1.py --image data/memi_processed/images --out qa_roi --qa --face-weights models/face/yolov8n-face.pt
+```
+
+Nếu ROI lệch, chỉnh tỉ lệ trong `hg1_roi.ROI_SPECS` (có riêng cho ảnh F/L/R) hoặc truyền `--roi-json`.
+Góc chụp lấy từ đuôi tên file (`1_F.jpg`, `1_L.jpg`, `1_R.jpg`), hoặc ép bằng `--view F|L|R`; không rõ thì dùng F.
+
+**Bước 3. Tạo dữ liệu ROI và train giai đoạn 2** (chia tập vẫn theo bệnh nhân):
+
+```bash
+python melasma/prepare_roi.py --data data/memi_processed --out data/memi_roi --face-weights models/face/yolov8n-face.pt
+python melasma/train_unet.py --data data/memi_roi --all-folds --out runs/unet_roi --width 512 --height 512
+```
+
+Đọc `data/memi_roi/MANIFEST_ROI.txt`: số ảnh không tìm thấy mặt và "độ bao phủ nám" (tỉ lệ nám của ảnh gốc nằm trong các ROI).
+Độ bao phủ thấp nghĩa là ROI chưa khớp dữ liệu. SegFormer train tương tự bằng `train_segformer.py`.
+
+**Bước 4. Chạy pipeline:**
+
+```bash
+python melasma/pipeline_hg1.py --image anh.jpg --out ket_qua_hg1 --face-weights models/face/yolov8n-face.pt \
+  --ckpt runs/unet_roi/fold0/best.pt runs/unet_roi/fold1/best.pt runs/unet_roi/fold2/best.pt runs/unet_roi/fold3/best.pt runs/unet_roi/fold4/best.pt --tta
+```
+
+Ra: ảnh phủ ROI + vùng nám, mask, và `results.json` với từng ROI (`area_percent`, A, D, H) cùng MASI (0-48).
+
+**MASI được tính thế nào và giới hạn:**
+- `MASI = 0.3·A·(D+H)` cho trán, má phải, má trái và `0.1·A·(D+H)` cho cằm. Mũi được phân vùng nhưng không tính vào MASI.
+- **A** (diện tích 0-6) tính trực tiếp từ mask, trên phần da của ROI.
+- **D** (độ đậm) và **H** (độ đồng đều) vốn do bác sĩ chấm. Ở đây chỉ là **quy tắc thủ công**: D từ chênh lệch độ sáng L* giữa da bình thường và vùng nám,
+  H từ độ đặc của vùng nám. Các ngưỡng (`DARK_BINS`, `HOMO_BINS` trong `hg1_masi.py`) là **giả định, chưa hiệu chỉnh**. Nếu có điểm MASI của bác sĩ, hãy đối chiếu để chỉnh.
+- ROI chia theo hộp khuôn mặt, neo vào đáy hộp và chiều rộng (ổn định hơn cạnh trên vì mắt bị che mosaic). Tỉ lệ đo trên 3 ảnh mẫu F/L/R của một bệnh nhân, cần kiểm tra thêm trên nhiều ảnh. Ảnh nghiêng chỉ có má bên nhìn thấy, nên MASI của từng ảnh nghiêng không đầy đủ (cờ `complete=false`) và thấp hơn thật.
+- D so vùng nám với **vành da sát bên ngoài vùng nám** (ít bị ảnh hưởng bởi ánh sáng giảm dần từ giữa mặt ra mép); mốc trong ROI hoặc toàn mặt chỉ là dự phòng. Cờ `d_reliable=false` (và `masi.reliable=false`, `unreliable_D`) bật khi vùng nám không tối hơn da xung quanh (`delta_L <= 0`) hoặc gần như không khác da xung quanh (`contrast_dE < 3`): khi đó nghi dương tính giả hoặc nám rất nhạt, và MASI của ảnh đó **không nên dùng**. Các ngưỡng D vẫn là giả định, chưa hiệu chỉnh.
+- MEMI-DS không có điểm MASI của bác sĩ nên MASI tự động **chưa được kiểm chứng**.
+
+## 8. Demo web trong DermaCare AI
+
+Hệ thống đã tích hợp toàn diện 3 tính năng vào máy chủ Flask của DermaCare và trang web `melasma.html`:
+1. **Phân tích Coarse-to-Fine (Hướng 1)**: Tự động phát hiện khuôn mặt (YOLO/YuNet), cắt 5 ROI giải phẫu ở độ phân giải gốc, chạy U-Net phân vùng trên từng ROI và tính chỉ số diện tích & mức độ nặng MASI (0–48) cùng lưới hiển thị 5 ROI phóng to.
+2. **Khảo sát nguy cơ lâm sàng (Paper BV Quy Hòa)**: Bảng câu hỏi sàng lọc 10 yếu tố nguy cơ dịch tễ học từ nghiên cứu 795 bệnh nhân (Hồ Văn Lâm và cs., 2021), tính toán xác suất nguy cơ mắc nám (%), phân tích nguyên nhân và đưa ra khuyến cáo phòng ngừa cá nhân hóa.
+3. **Phân vùng nhanh toàn mặt (Baseline)**: U-Net ResNet34 5-fold ensemble với thanh trượt so sánh Before/After.
+
+**Cách khởi chạy:**
+```bash
+# Sử dụng môi trường ảo đã có PyTorch và Flask (ví dụ .venv_gpu):
+.venv_gpu\Scripts\activate
+cd DermaCareAI
+python server.py
+```
+Mở trình duyệt tại <http://localhost:5090/melasma.html>.
+
+**Các điểm cuối API:**
+- `GET  /api/melasma/status` : Kiểm tra trạng thái sẵn sàng của mô hình Hướng 1, Baseline và Khảo sát nguy cơ.
+- `POST /api/melasma/risk_survey` : Gửi JSON dữ liệu khảo sát, nhận về % nguy cơ, phân loại mức độ và khuyến cáo.
+- `POST /api/melasma/segment` : Phân tích ảnh khuôn mặt (hỗ trợ `mode="hg1"` cho Coarse-to-Fine hoặc `mode="baseline"`).
+- `POST /api/melasma/pipeline_hg1` : Điểm cuối chuyên dụng cho pipeline Hướng 1.
 
 **Quyền riêng tư và an toàn:**
 - Ảnh được xử lý trong bộ nhớ và không được lưu; nhật ký chỉ ghi kích thước, thời gian và phần trăm.
