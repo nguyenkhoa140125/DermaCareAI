@@ -117,7 +117,7 @@ select:focus,input:focus{outline:2px solid var(--teal);border-color:transparent}
   <header>
     <a class="back" href="/">← Về DermaCare AI Platform</a>
     <h1>Đánh giá & Phân vùng Nám má (Melasma Intelligence)</h1>
-    <p class="lede">Hệ thống tích hợp đa phương thức: Sàng lọc nguy cơ dịch tễ học lâm sàng (nghiên cứu BV Phong - Da liễu Quy Hòa) kết hợp Thị giác máy tính Coarse-to-Fine (YOLO ROI + U-Net) đo chỉ số diện tích & mức độ nặng MASI.</p>
+    <p class="lede">Hệ thống tích hợp đa phương thức: Bảng điểm sàng lọc nguy cơ (dựa trên các yếu tố nêu trong nghiên cứu BV Phong - Da liễu Quy Hòa, không phải mô hình học máy) kết hợp Thị giác máy tính Coarse-to-Fine (YOLO ROI + U-Net) ước lượng diện tích & MASI tham khảo.</p>
   </header>
 
   <!-- Thanh Tab gọn gàng, đúng 2 chức năng bổ trợ nhau -->
@@ -134,7 +134,7 @@ select:focus,input:focus{outline:2px solid var(--teal);border-color:transparent}
       <div>
         <label class="drop" id="drop-hg1" for="file-hg1">
           <strong>Kéo thả ảnh chân dung hoặc bấm để chọn</strong>
-          <span>Hỗ trợ ảnh JPG, PNG, WebP (tối đa 10 MB). YOLO/YuNet tự động định vị khuôn mặt và cắt 5 vùng giải phẫu ở độ phân giải quang học cao.</span>
+          <span>Hỗ trợ ảnh JPG, PNG, WebP (tối đa 10 MB). YOLO/YuNet tự động định vị khuôn mặt và cắt 5 vùng giải phẫu từ ảnh tải lên.</span>
           <input id="file-hg1" type="file" accept="image/*">
         </label>
 
@@ -181,13 +181,13 @@ select:focus,input:focus{outline:2px solid var(--teal);border-color:transparent}
           <div class="masi-board">
             <div class="masi-head">
               <div>
-                <span style="font-size:.85rem;color:var(--muted);text-transform:uppercase;font-weight:700">Chỉ số MASI Lâm Sàng</span>
+                <span style="font-size:.85rem;color:var(--muted);text-transform:uppercase;font-weight:700">MASI ước lượng (tham khảo)</span>
                 <div class="masi-val" id="masi-num">0.0</div>
               </div>
               <span class="masi-badge mild" id="masi-badge">Nhẹ</span>
             </div>
             <div style="font-size:.88rem;color:var(--muted)">
-              Thang điểm MASI (0 – 48) đo lường diện tích ($A$), độ đậm sắc tố ($D$) và tính đồng nhất ($H$) trên 4 vùng:
+              Thang điểm MASI (0 – 48) gồm diện tích (A), độ đậm (D) và độ đồng đều (H) trên 4 vùng. D và H chỉ là ước lượng tự động bằng ngưỡng giả định; ngưỡng Nhẹ/Trung bình/Nặng (10 và 20) do tác giả đặt, chưa được kiểm chứng:
             </div>
             <div class="masi-bars">
               <div class="bar-col"><div class="name">Trán (30%)</div><div class="val" id="masi-c-forehead">0.0</div></div>
@@ -203,10 +203,9 @@ select:focus,input:focus{outline:2px solid var(--teal);border-color:transparent}
           <div class="roi-grid" id="roi-cards-container"></div>
         </div>
 
-        <h3>Hàm lượng khoa học của Hướng 1</h3>
+        <h3>Giới thiệu Hướng 1</h3>
         <p style="font-size:.9rem;color:var(--muted);margin:0">
-          Giải quyết bài toán <strong>Resolution Tradeoff</strong>: Ảnh chân dung y tế thường có độ phân giải rất lớn (3K–4K).
-          Nếu nén thẳng xuống 512×512, sắc tố vi mô bị mờ hoàn toàn. Pipeline dùng YOLO/YuNet cắt 5 ROI ở độ phân giải gốc rồi đưa vào U-Net ResNet34 phân vùng chính xác từng pixel.
+          Hướng 1 tìm khuôn mặt bằng YOLO (YuNet dự phòng), cắt 5 vùng quan tâm (ROI) từ ảnh tải lên rồi đưa từng ROI vào U-Net ResNet34 để tính diện tích theo vùng và MASI ước lượng. Hiệu quả so với phân vùng toàn mặt chưa được chứng minh trong thực nghiệm của đề tài; kết quả chỉ mang tính tham khảo nghiên cứu.
         </p>
       </aside>
     </div>
@@ -322,7 +321,7 @@ select:focus,input:focus{outline:2px solid var(--teal);border-color:transparent}
         <div id="survey-result" hidden>
           <div class="masi-head" style="margin-bottom:8px">
             <div>
-              <span style="font-size:.85rem;color:var(--muted);text-transform:uppercase;font-weight:700">Xác suất nguy cơ</span>
+              <span style="font-size:.85rem;color:var(--muted);text-transform:uppercase;font-weight:700">Điểm nguy cơ (tham khảo)</span>
               <div class="masi-val" id="res-risk-pct">0%</div>
             </div>
             <span class="masi-badge" id="res-risk-badge">Thấp</span>

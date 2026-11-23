@@ -459,8 +459,10 @@ def resolve_multi_ai():
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(); parser.add_argument("--port", type=int, default=PORT); args = parser.parse_args()
+    parser = argparse.ArgumentParser(); parser.add_argument("--port", type=int, default=PORT)
+    parser.add_argument("--host", default=os.environ.get("DERMACARE_HOST", "127.0.0.1"), help="mac dinh 127.0.0.1 (chi may nay); dung 0.0.0.0 neu muon mo cho mang noi bo")
+    args = parser.parse_args()
     save_knowledge()
     log.info("=" * 60); log.info(f"  DermaCare AI Server v{VERSION} - Port {args.port}")
-    log.info(f"  Online: {is_online()}"); log.info(f"  URL: http://localhost:{args.port}"); log.info("=" * 60)
-    app.run(host="0.0.0.0", port=args.port, debug=False, threaded=True, use_reloader=False)
+    log.info(f"  Online: {is_online()}"); log.info(f"  URL: http://{args.host}:{args.port}"); log.info("=" * 60)
+    app.run(host=args.host, port=args.port, debug=False, threaded=True, use_reloader=False)

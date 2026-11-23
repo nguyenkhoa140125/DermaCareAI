@@ -1,4 +1,4 @@
-﻿# --- Du lieu va ket qua (khong dua len git) ---
+# --- Du lieu va ket qua (khong dua len git) ---
 /data/
 /runs/
 memi_raw/
@@ -57,3 +57,8 @@ cay_thu_muc*.txt
 .DS_Store
 Thumbs.db
 desktop.ini
+
+# --- Ket qua trung gian cua Huong 1 (khong dua len git) ---
+qa_low/
+logs_roi*/
+results_hg1/

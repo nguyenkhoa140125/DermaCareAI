@@ -310,14 +310,15 @@ def analyse_hg1(rgb, tta=False, view="auto"):
         }
 
     masi_val = result["masi"]["masi"]
+    # Ngưỡng 10 và 20 do tác giả đặt để gợi ý mức độ, KHÔNG phải ngưỡng lâm sàng đã kiểm chứng.
     if masi_val < 10.0:
-        masi_severity = "Nhẹ (Mild)"
+        masi_severity = "Nhẹ (tham khảo)"
         masi_class = "mild"
     elif masi_val <= 20.0:
-        masi_severity = "Trung bình (Moderate)"
+        masi_severity = "Trung bình (tham khảo)"
         masi_class = "moderate"
     else:
-        masi_severity = "Nặng (Severe)"
+        masi_severity = "Nặng (tham khảo)"
         masi_class = "severe"
 
     pct = 100.0 * float(full_mask.mean())

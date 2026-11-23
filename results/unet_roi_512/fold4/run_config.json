@@ -1,0 +1,7 @@
+{
+ "arch": "unet",
+ "encoder": "resnet34",
+ "width": 512,
+ "height": 512,
+ "thr": 0.5
+}

@@ -241,33 +241,42 @@ Ra: ảnh phủ ROI + vùng nám, mask, và `results.json` với từng ROI (`ar
 
 ## 8. Demo web trong DermaCare AI
 
-Hệ thống đã tích hợp toàn diện 3 tính năng vào máy chủ Flask của DermaCare và trang web `melasma.html`:
-1. **Phân tích Coarse-to-Fine (Hướng 1)**: Tự động phát hiện khuôn mặt (YOLO/YuNet), cắt 5 ROI giải phẫu ở độ phân giải gốc, chạy U-Net phân vùng trên từng ROI và tính chỉ số diện tích & mức độ nặng MASI (0–48) cùng lưới hiển thị 5 ROI phóng to.
-2. **Khảo sát nguy cơ lâm sàng (Paper BV Quy Hòa)**: Bảng câu hỏi sàng lọc 10 yếu tố nguy cơ dịch tễ học từ nghiên cứu 795 bệnh nhân (Hồ Văn Lâm và cs., 2021), tính toán xác suất nguy cơ mắc nám (%), phân tích nguyên nhân và đưa ra khuyến cáo phòng ngừa cá nhân hóa.
-3. **Phân vùng nhanh toàn mặt (Baseline)**: U-Net ResNet34 5-fold ensemble với thanh trượt so sánh Before/After.
+Demo gồm ba tab trong trang `melasma.html`:
 
-**Cách khởi chạy:**
+1. **Phân tích Coarse-to-Fine (Hướng 1)**: YOLO tìm mặt, chia 5 ROI, U-Net phân vùng từng ROI, tính diện tích % và MASI tham khảo (mục 7b). **Chưa được đánh giá định lượng** (xem mục 9).
+2. **Phân vùng nhanh toàn mặt (baseline)**: U-Net ResNet34, ghép 5 fold, có thanh trượt so sánh trước/sau.
+3. **Khảo sát nguy cơ**: bảng câu hỏi 10 yếu tố. **Đây không phải mô hình học máy.** `melasma_risk.py` là bảng điểm do tác giả tự đặt trọng số dựa trên các yếu tố nêu trong bài báo Hồ Văn Lâm và cs. (2021, 795 mẫu). Trọng số không được huấn luyện hay hiệu chỉnh trên dữ liệu, và con số "xác suất nguy cơ" **không phải xác suất đã kiểm định**; chỉ nên đọc như điểm sàng lọc sơ bộ.
+
+**Điều kiện:** cần đã cài `requirements.txt` và `requirements-demo.txt` (mục 4), và có trọng số (không nằm trong git).
+
 ```bash
-# Sử dụng môi trường ảo đã có PyTorch và Flask (ví dụ .venv_gpu):
-.venv_gpu\Scripts\activate
+# 1. Chép trọng số baseline (sau khi đã train U-Net ở mục 6, bước 3)
+python melasma/export_demo_models.py --runs runs/unet_r34 --dest DermaCareAI/models/melasma
+
+# 2. (Tùy chọn, cho tab Hướng 1) đặt trọng số YOLO nhận diện khuôn mặt vào models/face/yolov8n-face.pt
+#    và train giai đoạn ROI (mục 7b, bước 3) để có runs/unet_roi/fold*/best.pt
+
+# 3. Chạy máy chủ bằng môi trường ảo đã cài PyTorch
 cd DermaCareAI
 python server.py
 ```
-Mở trình duyệt tại <http://localhost:5090/melasma.html>.
+
+Mở <http://127.0.0.1:5090/melasma.html>. Chưa có trọng số nào thì trang báo "Chưa có mô hình". Thiếu `models/face/yolov8n-face.pt` thì Hướng 1 dùng bộ dò mặt dự phòng (ROI kém chính xác hơn). Thiếu `runs/unet_roi/` thì tab Hướng 1 không chạy được, hãy dùng tab baseline.
 
 **Các điểm cuối API:**
-- `GET  /api/melasma/status` : Kiểm tra trạng thái sẵn sàng của mô hình Hướng 1, Baseline và Khảo sát nguy cơ.
-- `POST /api/melasma/risk_survey` : Gửi JSON dữ liệu khảo sát, nhận về % nguy cơ, phân loại mức độ và khuyến cáo.
-- `POST /api/melasma/segment` : Phân tích ảnh khuôn mặt (hỗ trợ `mode="hg1"` cho Coarse-to-Fine hoặc `mode="baseline"`).
-- `POST /api/melasma/pipeline_hg1` : Điểm cuối chuyên dụng cho pipeline Hướng 1.
+- `GET  /api/melasma/status`: trạng thái sẵn sàng của Hướng 1, baseline và khảo sát.
+- `POST /api/melasma/risk_survey`: gửi JSON khảo sát, nhận điểm nguy cơ và khuyến cáo.
+- `POST /api/melasma/segment`: phân tích ảnh (`mode="hg1"` hoặc `mode="baseline"`).
+- `POST /api/melasma/pipeline_hg1`: điểm cuối chuyên dụng cho Hướng 1.
 
 **Quyền riêng tư và an toàn:**
 - Ảnh được xử lý trong bộ nhớ và không được lưu; nhật ký chỉ ghi kích thước, thời gian và phần trăm.
-- `server.py` mặc định mở cổng cho cả mạng nội bộ (`host="0.0.0.0"`, CORS `*`). Khi demo hoặc dùng với ảnh thật, hãy đổi thành `host="127.0.0.1"` ở dòng `app.run(...)`.
+- Máy chủ **mặc định chỉ lắng nghe `127.0.0.1`**. Muốn mở cho mạng nội bộ, chạy `python server.py --host 0.0.0.0`. Khi đó CORS đang là `*`, nên đừng dùng ảnh thật của người khác.
 - Ảnh tối đa 10 MB, được thu nhỏ về cạnh dài 1600 điểm ảnh khi xử lý.
 
 ## 9. Hạn chế
 
+- **Pipeline Hướng 1 chưa được đánh giá định lượng** (chưa có Dice trên ROI, chưa so với baseline). MASI chỉ là ước lượng tham khảo: A tính từ mask, còn D và H dùng ngưỡng giả định chưa hiệu chỉnh và chưa đối chiếu với điểm của bác sĩ.
 - Nhãn MEMI-DS khá thô (mảng lớn khoanh quanh vùng sẫm màu), có thể không nhất quán; Dice tối đa đạt được bị giới hạn bởi chất lượng nhãn.
 - Chỉ 63 bệnh nhân, cùng một thiết bị chụp, nền đen, mắt bị che. Độ chính xác trên ảnh điện thoại **chưa được đo bằng nhãn thật**.
 - Chưa có ý kiến của bác sĩ da liễu để xác nhận nhãn hoặc dự đoán.
@@ -284,8 +293,8 @@ Mở trình duyệt tại <http://localhost:5090/melasma.html>.
 | Lỗi DataLoader trên Windows | Thêm `--workers 0` |
 | `ModuleNotFoundError: torch` | Chưa kích hoạt môi trường ảo đã cài PyTorch |
 | `prepare_memi.py` báo thiếu thư mục | Kiểm tra `--raw` trỏ đúng thư mục chứa 4 thư mục `Flaky_*`, `Punctate_*` |
-| Trang demo báo "Máy chủ chưa cài PyTorch" | Chạy `server.py` bằng môi trường ảo có PyTorch (mục 8, bước 3) |
-| Trang demo báo "Chưa có mô hình" | Chạy bước 1 của mục 8 |
+| Trang demo báo "Máy chủ chưa cài PyTorch" | Chạy `server.py` bằng môi trường ảo có PyTorch (mục 8, bước 3 của khối lệnh) |
+| Trang demo báo "Chưa có mô hình" | Chạy bước 1 của mục 8 (`export_demo_models.py`) |
 | GPU GTX 10xx không nhanh hơn khi bật AMP | Bình thường: dòng này không có lõi tensor. Thử `--no-amp` và so thời gian mỗi epoch |
 
 ## 11. Giấy phép, dữ liệu và ghi công

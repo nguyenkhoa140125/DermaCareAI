@@ -1,0 +1,9 @@
+BIEN BAN DU LIEU ROI (Huong 1)
+Anh dau vao: 130 | khong tim thay mat (bi bo): 0 | tong ROI: 582
+Giai doan 1 dung: {'yolo': 127, 'yunet': 3}
+Khung luu: 768x768 | ROI: forehead, right_malar, left_malar, nose, chin
+Do bao phu nam (ti le pixel nam cua anh goc nam trong cac ROI): trung binh 86.5%, thap nhat 27.4%
+
+  train:  412 ROI
+  val  :  105 ROI
+  test :   65 ROI

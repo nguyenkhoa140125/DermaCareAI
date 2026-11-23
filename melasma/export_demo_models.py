@@ -2,7 +2,7 @@
 export_demo_models.py -- Chep cac mo hinh U-Net da huan luyen vao thu muc DermaCare de chay demo.
 
 Chay (trong thu muc du an nghien cuu, noi co 'runs'):
-  python export_demo_models.py --runs runs/unet_r34 --dest D:\\Proj\\DermaCare_AI-main\\DermaCareAI\\models\\melasma
+  python melasma/export_demo_models.py --runs runs/unet_r34 --dest DermaCareAI/models/melasma
 
 Moi fold chep 2 tep: best.pt (trong so) va run_config.json (kich thuoc dau vao, encoder, nguong).
 Dung runs/unet_r34 (mo hinh GOC). KHONG dung runs/unet_neg (da loai vi hoc 'duong tat').
