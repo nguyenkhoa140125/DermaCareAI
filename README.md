@@ -42,6 +42,12 @@ bởi mô hình chưa từng thấy bệnh nhân đó):
 - Thí nghiệm thêm ảnh da bình thường làm mẫu âm (`train_unet_neg.py`) giảm mạnh báo nhầm nhưng làm mô hình gần như ngừng phát hiện nám
   ở miền ảnh khác ("đường tắt"), nên **bị loại**. Mã được giữ lại như một kết quả âm tính.
 
+- **Hướng 1** (pipeline hai giai đoạn, U-Net ResNet34 trên 582 ROI ở 512×512): Dice theo ROI 0.486 ± 0.063 (IoU 0.410). Ghép các ROI về ảnh gốc
+  và so sánh ghép cặp với U-Net toàn mặt trên cùng 130 ảnh: Dice **0.589 ± 0.058 so với 0.661 ± 0.051**, chênh lệch trung bình −0.075 (khoảng tin cậy 95%
+  theo bệnh nhân [−0.102, −0.048]); Hướng 1 chỉ cao hơn ở 44/130 ảnh. **Hướng 1 không cải thiện độ chính xác phân vùng so với đường cơ sở.**
+  Huấn luyện ở 768×768 với batch 1 cho Dice theo ROI 0.342 (chưa kết luận được về ảnh hưởng của độ phân giải). Độ bao phủ nám của các ROI
+  trung bình 86.5% (chính diện 80.2%); MASI ước lượng chỉ đáng tin ở 17/130 ảnh. Số liệu tóm tắt nằm trong thư mục `results/`.
+
 Nhãn của MEMI-DS khá thô nên Dice bị giới hạn. Xem mục [Hạn chế](#9-hạn-chế).
 
 ## 3. Cấu trúc thư mục
@@ -238,6 +244,22 @@ Ra: ảnh phủ ROI + vùng nám, mask, và `results.json` với từng ROI (`ar
 - ROI chia theo hộp khuôn mặt, neo vào đáy hộp và chiều rộng (ổn định hơn cạnh trên vì mắt bị che mosaic). Tỉ lệ đo trên 3 ảnh mẫu F/L/R của một bệnh nhân, cần kiểm tra thêm trên nhiều ảnh. Ảnh nghiêng chỉ có má bên nhìn thấy, nên MASI của từng ảnh nghiêng không đầy đủ (cờ `complete=false`) và thấp hơn thật.
 - D so vùng nám với **vành da sát bên ngoài vùng nám** (ít bị ảnh hưởng bởi ánh sáng giảm dần từ giữa mặt ra mép); mốc trong ROI hoặc toàn mặt chỉ là dự phòng. Cờ `d_reliable=false` (và `masi.reliable=false`, `unreliable_D`) bật khi vùng nám không tối hơn da xung quanh (`delta_L <= 0`) hoặc gần như không khác da xung quanh (`contrast_dE < 3`): khi đó nghi dương tính giả hoặc nám rất nhạt, và MASI của ảnh đó **không nên dùng**. Các ngưỡng D vẫn là giả định, chưa hiệu chỉnh.
 - MEMI-DS không có điểm MASI của bác sĩ nên MASI tự động **chưa được kiểm chứng**.
+
+### Tái lập số liệu Hướng 1
+
+Chạy từ thư mục gốc của repo (cần `data/memi_processed`, `models/face/yolov8n-face.pt` và đã có `runs/unet_r34` của đường cơ sở):
+
+```bash
+python melasma/prepare_roi.py --data data/memi_processed --out data/memi_roi --face-weights models/face/yolov8n-face.pt
+python melasma/train_unet.py --data data/memi_roi --all-folds --out runs/unet_roi --width 512 --height 512
+python melasma/phan_tich.py runs/unet_roi            # Dice theo vùng ROI, theo lượng nám
+python melasma/coverage_qa.py                        # độ bao phủ ROI, ảnh QA vào qa_low/
+python melasma/eval_hg1_fullmask.py                  # Dice toàn mặt của Hướng 1 (ảnh held-out)
+python melasma/so_sanh_ghep_cap.py runs/unet_r34     # so sánh ghép cặp với đường cơ sở
+```
+
+Thư mục `results/` chứa nhật ký và bảng số liệu tóm tắt của hai lần chạy (512 và 768) để đối chiếu mà không cần chạy lại; không có ảnh hay trọng số.
+
 
 ## 8. Demo web trong DermaCare AI
 
